@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Тренажер НМТ</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: #0f0f12;
+      --card-bg: #1c1c1e;
+      --card-hover: #26262a;
+      --text-main: #ffffff;
+      --text-sub: #8e8e93;
+      --accent: #0a84ff;
+    }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      user-select: none;
+    }
+    
+    .screen {
+      display: none;
+    }
+    .screen.active {
+      display: block;
+    }
+
+    .pill-back-btn {
+      background-color: #242428;
+      color: #e4e4e6;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .pill-back-btn:active {
+      background-color: #323236;
+    }
+
+    .header {
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 24px;
+    }
+    .header-icon {
+      font-size: 44px;
+      margin-bottom: 8px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .menu-item {
+      background-color: var(--card-bg);
+      border-radius: 18px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .menu-item:active {
+      background-color: var(--card-hover);
+    }
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .item-icon-box {
+      width: 38px;
+      height: 38px;
+      background: #2c2c2e;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .item-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .item-desc {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+    .chevron {
+      color: var(--text-sub);
+      font-size: 18px;
+    }
+
+    .folder-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      margin-top: 4px;
+    }
+    .folder-subtitle {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 20px;
+    }
+
+    .alphabet-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .alpha-card {
+      background-color: var(--card-bg);
+      border-radius: 18px;
+      padding: 14px 4px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .alpha-card:active {
+      background-color: var(--card-hover);
+    }
+    .alpha-letter {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .alpha-count {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 4px;
+      background-color: #2c2c2e;
+      border-radius: 2px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #0a84ff;
+      transition: width 0.3s ease;
+    }
+    .round-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-sub);
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+    .round-content {
+      text-align: center;
+    }
+    .round-prompt {
+      color: var(--text-sub);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .round-word {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 30px;
+      letter-spacing: 0.5px;
+    }
+
+    .vowels-grid {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .vowel-btn {
+      width: 64px;
+      height: 64px;
+      background-color: #242428;
+      border: 1px solid #2c2c2e;
+      border-radius: 20px;
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    .vowel-btn.correct {
+      background-color: #264a34;
+      border: 1px solid #34c759;
+      color: #ffffff;
+    }
+    .vowel-btn.wrong {
+      background-color: #4a2626;
+      border: 1px solid #ff3b30;
+      color: #ffffff;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .option-btn {
+      width: 100%;
+      background-color: var(--card-bg);
+      border: 1px solid transparent;
+      border-radius: 18px;
+      padding: 16px 18px;
+      color: var(--text-main);
+      font-size: 15px;
+      line-height: 1.3;
+      text-align: left;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    .option-btn:active {
+      background-color: var(--card-hover);
+    }
+    .option-btn.correct {
+      background-color: #264a34;
+      border: 1px solid #34c759;
+      color: #ffffff;
+    }
+    .option-btn.wrong {
+      background-color: #4a2626;
+      border: 1px solid #ff3b30;
+      color: #ffffff;
+    }
+
+    .feedback-msg {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      min-height: 24px;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .feedback-msg.correct { color: #34c759; }
+    .feedback-msg.wrong { color: #ff3b30; }
+
+    .primary-blue-btn {
+      width: 100%;
+      background-color: #0a84ff;
+      color: #ffffff;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .result-container {
+      text-align: center;
+      padding-top: 20px;
+    }
+    .result-emoji {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .result-score {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .result-subtitle {
+      font-size: 14px;
+      color: var(--text-sub);
+      margin-bottom: 28px;
+    }
+    .errors-header {
+      font-size: 13px;
+      color: var(--text-sub);
+      text-align: left;
+      margin-bottom: 10px;
+    }
+    .error-card {
+      background-color: var(--card-bg);
+      border-radius: 18px;
+      padding: 14px 18px;
+      text-align: left;
+      margin-bottom: 10px;
+    }
+    .error-word {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .error-correct {
+      font-size: 14px;
+      color: var(--text-sub);
+    }
+    .secondary-dark-btn {
+      width: 100%;
+      background-color: #1c1c1e;
+      color: #ffffff;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .search-input {
+      width: 100%;
+      background-color: var(--card-bg);
+      border: none;
+      border-radius: 18px;
+      padding: 14px 18px;
+      color: #ffffff;
+      font-size: 15px;
+      box-sizing: border-box;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    .search-input::placeholder {
+      color: var(--text-sub);
+    }
+    .dict-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dict-card {
+      background-color: var(--card-bg);
+      border-radius: 18px;
+      padding: 16px 18px;
+    }
+    .dict-phrase {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #ffffff;
+    }
+    .dict-meaning {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Главный экран -->
+  <div id="screen-main" class="screen active">
+    <div class="header">
+      <div class="header-icon">🎓</div>
+      <h1 class="title">Тренажер НМТ</h1>
+      <div class="subtitle">Обери предмет і почни тренування</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="total-ans">0</div>
+        <div class="stat-lbl">відповідей</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="accuracy">0%</div>
+        <div class="stat-lbl">правильних</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="streak">0 🔥</div>
+        <div class="stat-lbl">рекорд</div>
+      </div>
+    </div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="openScreen('screen-ukr')">
+        <div class="item-left">
+          <div class="item-icon-box">🇺🇦</div>
+          <div>
+            <div class="item-title">Українська мова</div>
+            <div class="item-desc">Наголоси · Фразеологізми</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
+      <div class="menu-item" onclick="openScreen('screen-eng')">
+        <div class="item-left">
+          <div class="item-icon-box">🇬🇧</div>
+          <div>
+            <div class="item-title">Англійська мова</div>
+            <div class="item-desc">Vocab · Phrasal verbs · Synonyms · Antonyms</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Папка "Українська мова" -->
+  <div id="screen-ukr" class="screen">
+    <button class="pill-back-btn" onclick="openScreen('screen-main')">‹ Назад</button>
+    <div class="folder-title">Українська мова</div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="openScreen('screen-stress-modes')">
+        <div class="item-left">
+          <div class="item-icon-box" style="font-size: 13px; color: #8e8e93; font-weight: 600;">abc</div>
+          <div>
+            <div class="item-title">Наголоси</div>
+            <div class="item-desc">233 слова</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
+      <div class="menu-item" onclick="openGenericModes('phrase')">
+        <div class="item-left">
+          <div class="item-icon-box">💬</div>
+          <div>
+            <div class="item-title">Фразеологізми</div>
+            <div class="item-desc">247 виразів</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2b. Папка "Англійська мова" -->
+  <div id="screen-eng" class="screen">
+    <button class="pill-back-btn" onclick="openScreen('screen-main')">‹ Назад</button>
+    <div class="folder-title">Англійська мова</div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="openGenericModes('eng_vocab')">
+        <div class="item-left">
+          <div class="item-icon-box">📚</div>
+          <div>
+            <div class="item-title">Vocabulary</div>
+            <div class="item-desc">Словниковий запас НМТ</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
+      <div class="menu-item" onclick="openGenericModes('eng_phrasal')">
+        <div class="item-left">
+          <div class="item-icon-box">🔄</div>
+          <div>
+            <div class="item-title">Phrasal Verbs</div>
+            <div class="item-desc">Фразові дієслова</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
+      <div class="menu-item" onclick="openGenericModes('eng_syn')">
+        <div class="item-left">
+          <div class="item-icon-box">🔗</div>
+          <div>
+            <div class="item-title">Synonyms</div>
+            <div class="item-desc">Слова з близьким значенням</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
+      <div class="menu-item" onclick="openGenericModes('eng_ant')">
+        <div class="item-left">
+          <div class="item-icon-box">⚖️</div>
+          <div>
+            <div class="item-title">Antonyms</div>
+            <div class="item-desc">Слова з протилежним значенням</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Экран выбора режима "Наголоси" -->
+  <div id="screen-stress-modes" class="screen">
+    <button class="pill-back-btn" onclick="openScreen('screen-ukr')">‹ Назад</button>
+    <div class="folder-title">Наголоси</div>
+    <div class="folder-subtitle">Познач, на яку голосну падає наголос</div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="startNormalMode()">
+        <div class="item-left">
+          <div class="item-icon-box">🎯</div>
+          <div>
+            <div class="item-title">Звичайний режим</div>
+            <div class="item-desc">Випадкові слова, без кінця</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-item" onclick="startRound10()">
+        <div class="item-left">
+          <div class="item-icon-box">⏱️</div>
+          <div>
+            <div class="item-title">Раунд на 10 слів</div>
+            <div class="item-desc">Із результатом у кінці</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-item" onclick="openScreen('screen-alphabet')">
+        <div class="item-left">
+          <div class="item-icon-box" style="font-size: 11px; font-weight: bold; line-height: 1.1;">ab<br>cd</div>
+          <div>
+            <div class="item-title">За алфавітом</div>
+            <div class="item-desc">Обери літеру</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
+      <div class="menu-item" onclick="startErrorsRound()">
+        <div class="item-left">
+          <div class="item-icon-box">🔄</div>
+          <div>
+            <div class="item-title">Робота над помилками</div>
+            <div class="item-desc" id="errors-menu-desc">0 слів чекає</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3b. Экран выбора режима (Фразеологізми & Английские разделы) -->
+  <div id="screen-generic-modes" class="screen">
+    <button class="pill-back-btn" id="generic-modes-back-btn" onclick="openScreen('screen-ukr')">‹ Назад</button>
+    <div class="folder-title" id="generic-modes-title">Фразеологізми</div>
+    <div class="folder-subtitle" id="generic-modes-subtitle">Обери правильне значення виразу</div>
+
+    <div class="menu-list">
+      <div class="menu-item" onclick="startGenericNormal()">
+        <div class="item-left">
+          <div class="item-icon-box">🎯</div>
+          <div>
+            <div class="item-title">Звичайний режим</div>
+            <div class="item-desc">Випадкові завдання, без кінця</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-item" onclick="startGenericRound10()">
+        <div class="item-left">
+          <div class="item-icon-box">⏱️</div>
+          <div>
+            <div class="item-title">Раунд на 10 питань</div>
+            <div class="item-desc">Із результатом у кінці</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-item" onclick="startGenericErrors()">
+        <div class="item-left">
+          <div class="item-icon-box">🔄</div>
+          <div>
+            <div class="item-title">Робота над помилками</div>
+            <div class="item-desc" id="generic-errors-desc">0 елементів чекає</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-item" onclick="openGenericDictList()">
+        <div class="item-left">
+          <div class="item-icon-box">📋</div>
+          <div>
+            <div class="item-title">Переглянути список</div>
+            <div class="item-desc">Усі слова та значення</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Экран "За алфавітом" -->
+  <div id="screen-alphabet" class="screen">
+    <button class="pill-back-btn" onclick="openScreen('screen-stress-modes')">‹ Назад</button>
+    <div class="folder-title">За алфавітом</div>
+    <div class="folder-subtitle">Обери літеру, з якої починаються слова</div>
+
+    <div class="alphabet-grid" id="alphabet-container"></div>
+  </div>
+
+  <!-- 4b. Экран "Словарь/Список" с поиском -->
+  <div id="screen-dict-list" class="screen">
+    <button class="pill-back-btn" onclick="openScreen('screen-generic-modes')">‹ Назад</button>
+    <div class="folder-title" id="dict-title">Список</div>
+    
+    <input type="text" id="dict-search-input" class="search-input" placeholder="Пошук..." oninput="filterDictList()">
+    
+    <div class="dict-list" id="dict-container"></div>
+  </div>
+
+  <!-- 5. Экран тренировки -->
+  <div id="screen-round10" class="screen">
+    <button class="pill-back-btn" id="round-back-btn" onclick="openScreen('screen-stress-modes')">‹ Назад</button>
+    
+    <div class="progress-bar-bg" id="progress-bar-bg">
+      <div class="progress-bar-fill" id="round-progress"></div>
+    </div>
+
+    <div class="round-status-row">
+      <span id="round-counter">Питання 1</span>
+      <span id="round-streak">🔥 0</span>
+    </div>
+
+    <div class="round-content">
+      <div class="round-prompt" id="round-prompt-text">Постав наголос</div>
+      <div class="round-word" id="round-word-text">аркушик</div>
+
+      <!-- Варианты для Наголосов -->
+      <div class="vowels-grid" id="vowels-container"></div>
+
+      <!-- Варианты для Тестов с 4 кнопками -->
+      <div class="options-list" id="options-container" style="display: none;"></div>
+
+      <div class="feedback-msg" id="feedback-text"></div>
+      <button class="primary-blue-btn" id="next-btn" style="display: none;" onclick="nextRoundQuestion()">Далі</button>
+    </div>
+  </div>
+
+  <!-- 6. Экран результатов раунда -->
+  <div id="screen-round-result" class="screen">
+    <button class="pill-back-btn" id="result-back-btn" onclick="openScreen('screen-stress-modes')">‹ Назад</button>
+    
+    <div class="result-container">
+      <div class="result-emoji">🎉</div>
+      <div class="result-score" id="res-score">9 / 10</div>
+      <div class="result-subtitle" id="res-subtitle">Добре, але є що підтягнути.</div>
+
+      <div id="errors-section" style="display: none;">
+        <div class="errors-header">Помилки цього раунду:</div>
+        <div id="errors-list"></div>
+      </div>
+
+      <div class="result-actions">
+        <button class="primary-blue-btn" onclick="restartCurrentRound()">Ще раз</button>
+        <button class="secondary-dark-btn" onclick="openScreen('screen-main')">На головну</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+    }
+
+    // --- БАЗЫ ДАННЫХ ---
+    const alphabetData = [
+      { letter: "А", count: 4 }, { letter: "Б", count: 11 }, { letter: "В", count: 22 }, { letter: "Г", count: 6 }, { letter: "Д", count: 19 },
+      { letter: "Е", count: 1 }, { letter: "Є", count: 1 },  { letter: "Ж", count: 1 },  { letter: "З", count: 27 }, { letter: "І", count: 1 },
+      { letter: "К", count: 18 }, { letter: "Л", count: 4 },  { letter: "М", count: 6 },  { letter: "Н", count: 11 }, { letter: "О", count: 11 },
+      { letter: "П", count: 33 }, { letter: "Р", count: 9 },  { letter: "С", count: 12 }, { letter: "Т", count: 8 },  { letter: "У", count: 4 },
+      { letter: "Ф", count: 5 },  { letter: "Х", count: 2 },  { letter: "Ц", count: 4 },  { letter: "Ч", count: 6 },  { letter: "Ш", count: 3 },
+      { letter: "Щ", count: 3 },  { letter: "Я", count: 1 }
+    ];
+
+    const allNmtWords = [
+      { word: "аркушик", vowels: ["а", "у", "и"], correctIdx: 0, formatted: "Аркушик" },
+      { word: "агрономія", vowels: ["а", "о", "о", "і", "я"], correctIdx: 3, formatted: "агрономІя" },
+      { word: "алфавіт", vowels: ["а", "а", "і"], correctIdx: 2, formatted: "алфавІт" },
+      { word: "асиметрія", vowels: ["а", "и", "е", "і", "я"], correctIdx: 3, formatted: "асиметрІя" },
+      { word: "багаторазовий", vowels: ["а", "а", "о", "а", "о", "и"], correctIdx: 4, formatted: "багаторазОвий" },
+      { word: "безпринциповий", vowels: ["е", "и", "и", "о", "и"], correctIdx: 3, formatted: "безпринципОвий" },
+      { word: "бородавка", vowels: ["о", "о", "а", "а"], correctIdx: 2, formatted: "бородАвка" },
+      { word: "босоніж", vowels: ["о", "о", "і"], correctIdx: 2, formatted: "босонІж" },
+      { word: "боязнь", vowels: ["о", "я"], correctIdx: 1, formatted: "боЯзнь" },
+      { word: "бюлетень", vowels: ["ю", "е", "е"], correctIdx: 2, formatted: "бюлетЕнь" },
+      { word: "випадок", vowels: ["и", "а", "о"], correctIdx: 0, formatted: "вИпадок" },
+      { word: "видання", vowels: ["и", "а", "я"], correctIdx: 1, formatted: "видАння" },
+      { word: "вимога", vowels: ["и", "о", "а"], correctIdx: 1, formatted: "вимОга" },
+      { word: "визвольний", vowels: ["и", "о", "и"], correctIdx: 1, formatted: "визвОльний" },
+      { word: "вітчим", vowels: ["і", "и"], correctIdx: 1, formatted: "вітчИм" },
+      { word: "помилка", vowels: ["о", "и", "а"], correctIdx: 1, formatted: "помИлка" },
+      { word: "мережа", vowels: ["е", "е", "а"], correctIdx: 1, formatted: "мерЕжа" },
+      { word: "кропива", vowels: ["о", "и", "а"], correctIdx: 1, formatted: "кропИва" },
+      { word: "начинка", vowels: ["а", "и", "а"], correctIdx: 0, formatted: "нАчинка" },
+      { word: "фольклор", vowels: ["о", "о"], correctIdx: 1, formatted: "фольклОр" },
+      { word: "квартал", vowels: ["а", "а"], correctIdx: 1, formatted: "квартАл" },
+      { word: "довідник", vowels: ["о", "і", "и"], correctIdx: 1, formatted: "довІдник" },
+      { word: "каталог", vowels: ["а", "а", "о"], correctIdx: 2, formatted: "каталОг" },
+      { word: "жалюзі", vowels: ["а", "ю", "і"], correctIdx: 2, formatted: "жалюзІ" }
+    ];
+
+    const allPhraseologisms = [
+       { key: "аби день до вечора", val: "робити щось абияк, без бажання; безрадісно, без будь-яких інтересів" },
+       { key: "авгієві стайні", val: "щось дуже занедбане, повне безладдя" },
+{ key: "аж вуха лящать", val: "дуже гучно, надміру сильно або з великим запалом" },
+{ key: "аж іскри летять", val: "дуже енергійно, завзято, запально, докладаючи всіх зусиль" },
+{ key: "аж кипить у руках", val: "швидко щось робити" },
+{ key: "аж кишить", val: "дуже багато" },
+{ key: "аж тини тріщать", val: "робити щось із великим розмахом, силою, шумом або дуже інтенсивно" },
+{ key: "аж око в'яне", val: "про щось вкрай непривабливе; стає страшно" },
+{ key: "азбучна істина", val: "загальнозрозуміла елементарна річ" },
+{ key: "альфа й омега", val: "початок і кінець чого-небудь" },
+{ key: "аріаднина нитка", val: "те, що дає правильний напрямок, допомагає знайти правильний вихід з якоїсь ситуації" },
+{ key: "ахіллесова п'ята", val: "дошкульне місце, вразлива сторона кого-, чого-небудь" },
+{ key: "ані рудої миші", val: "безлюдно" },
+{ key: "ані телень", val: "уперто мовчати; зовсім нічого не говорити" },
+{ key: "бабине літо", val: "погідні дні на початку осені; павутиння, що літає в цей період" },
+{ key: "багато води сплило", val: "минуло дуже багато часу, відбулося чимало змін" },
+{ key: "баламутити голову", val: "морочити когось, збивати з пантелику або заплутувати хибними розмовами" },
+{ key: "баляндраси точити", val: "вести порожні, несерйозні розмови" },
+{ key: "бачити наскрізь", val: "дуже добре розуміти чиїсь приховані наміри, думки чи характер" },
+{ key: "бентежити кров", val: "збуджувати когось" },
+{ key: "без царя в голові", val: "про людину необачну, дурну, яка діє безвідповідально" },
+{ key: "бити байдики", val: "марнувати час, нічого не робити, ледарювати" },
+{ key: "без сьомої клепки в голові", val: "про нерозумну людину, якій бракує кмітливості чи здорового глузду" },
+{ key: "бити в хвіст і в гриву", val: "дуже сильно діяти" },
+{ key: "брати в шори", val: "підкоряти кого-небудь своїй волі, примушувати коритися" },
+{ key: "бувати в бувальцях", val: "багато бачити, зазнавати в житті" },
+{ key: "білими нитками шитий", val: "невміло, погано замаскований, виконаний" },
+{ key: "брати у свої руки", val: "підкоряти кого-небудь своїй волі; керувати кимсь" },
+{ key: "без вогника", val: "неенергійно, без бажання щось робити" },
+{ key: "брати бика за роги", val: "діяти рішуче, енергійно" },
+{ key: "брати на кпини", val: "насміхатися" },
+{ key: "будуть люди", val: "сподівання на позитивні результати" },
+{ key: "бути на коні", val: "мати успіх" },
+{ key: "бути на сьомому небі", val: "радіти, бути задоволеним" },
+{ key: "бити лихом об землю", val: "не втрачати надії та бадьорості попри складні обставини чи нещастя, бути оптимістом" },
+{ key: "бити ноги", val: "багато й виснажливо ходити (часто даремно)" },
+{ key: "бити по кишені", val: "завдавати кому-небудь великих матеріальних збитків або бути дуже дорогим, вимагати багато грошей" },
+{ key: "бити чолом", val: "низько вклонятися на знак пошани, звертатися до когось із покірним проханням або офіційно вітати" },
+{ key: "битий жук", val: "про досвідчену людину, яку важко обдурити" },
+{ key: "битися з нуждою", val: "жити в бідності, тяжко працювати, щоб ледве зводити кінці з кінцями" },
+{ key: "бісики пускати", val: "кокетувати, грайливо дивитися на когось, намагаючись сподобатися або привернути увагу" },
+{ key: "блискати очима", val: "виражати поглядом гнів, роздратування" },
+{ key: "блукати манівцями", val: "діяти неправильно, не мати чіткої мети або говорити не по суті, уникаючи прямої відповіді" },
+{ key: "брати близько до серця", val: "гостро переживати що-небудь, надавати чомусь занадто великого значення" },
+{ key: "брати в обмолот", val: "рішуче впливати на когось, піддавати суворій критиці або змушувати активно працювати" },
+{ key: "бути за бортом", val: "опинитися поза справами, втратити можливість брати участь у чомусь важливому або залишитися без підтримки" },
+{ key: "брати за петельки", val: "притягати когось до відповідальності, вимагати пояснень або наполегливо змушувати щось зробити" },
+{ key: "брати на буксир", val: "допомагати комусь, хто відстає в роботі, навчанні чи справах, підтягувати його до свого рівня" },
+{ key: "брати на око", val: "помічати когось або щось, зацікавлюватися, придивлятися з певною метою" },
+{ key: "брати на решето", val: "критикувати, детально розбирати чиїсь вчинки або недоліки, часто висміюючи їх" },
+{ key: "брехню точити", val: "розпускати плітки, свідомо говорити неправду або вигадувати дурниці" },
+{ key: "буря в склянці води", val: "велике хвилювання або суперечка з нікчемного, дрібного приводу, що не вартий уваги" },
+{ key: "варити воду", val: "вередувати, знущатися з когось" },
+{ key: "велика риба", val: "про людину, яка має великий вплив" },
+{ key: "веремію закрутити", val: "затіяти щось неприємне, зчинити сум'яття" },
+{ key: "взяти голими руками", val: "про нескладну, посильну справу" },
+{ key: "валити через пень колоду", val: "робити щось дуже недбало, абияк, грубо або без будь-якого ладу" },
+{ key: "верства келебердянська", val: "іронічний вислів про дуже високу на зріст людину" },
+{ key: "викладати карти", val: "розповідати, нічого не приховуючи" },
+{ key: "вилами по воді писано", val: "не відомо, як буде" },
+{ key: "вивести на чисту воду", val: "викрити кого-небудь у нечесних діях" },
+{ key: "вийти сухим із води", val: "знайти вихід зі складної ситуації, уникнути покарання" },
+{ key: "виносити сміття з хати", val: "розголошувати таємниці" },
+{ key: "витрішки продавати", val: "дивитися з надмірною цікавістю" },
+{ key: "від букви до букви", val: "від початку до кінця, дуже уважно" },
+{ key: "від горшка два вершка", val: "про когось дуже малого зростом (найчастіше про дитину)" },
+{ key: "в'їстися в печінки", val: "надокучити, допекти, огиднути" },
+{ key: "влучити в саме око", val: "не помилитися" },
+{ key: "водою не розлити", val: "про міцну дружбу" },
+{ key: "воду решетом носити", val: "даремно витрачати сили" },
+{ key: "встромляти палиці в колеса", val: "перешкоджати комусь" },
+{ key: "видно пана по халявах", val: "людина розкривається в її поведінці" },
+{ key: "виводити з рівноваги", val: "позбавляти душевного спокою, порушувати нормальний ритм життя, роботи" },
+{ key: "вийти в люди", val: "домогтися певного становища в суспільстві" },
+{ key: "викинути з голови", val: "перестати думати про кого-, що-небудь, забути когось, щось" },
+{ key: "вискочити на сухе", val: "уникнути заслуженого покарання або вийти з неприємної ситуації без втрат" },
+{ key: "вислизнути з рук", val: "поступово зникати, зменшуватися, втрачатися" },
+{ key: "високо літати", val: "посідати високе становище" },
+{ key: "вити вовком", val: "бути в стані великого розпачу" },
+{ key: "витикати носа", val: "вийти звідкись або покинути щось" },
+{ key: "вичитувати мораль", val: "дорікаючи, давати комусь настанови, поради" },
+{ key: "відкривати шлях", val: "створювати сприятливі умови для досягнення успіху в чому-небудь" },
+{ key: "відкрити душу", val: "відверто, щиросердно ділитися з ким-небудь своїми заповітними думками, переживаннями, намірами" },
+{ key: "вітер у голові грає", val: "хто-небудь легковажний, несерйозний" },
+{ key: "води не замутить", val: "дуже лагідний, скромний, сумирний" },
+{ key: "водити за ніс", val: "обдурювати кого-небудь певний час, не виконуючи обіцяного або приховуючи щось" },
+{ key: "вскочити вище халяв", val: "потрапити в дуже скрутне, складне або неприємне становище" },
+{ key: "вішати на вуха локшину", val: "обманювати" },
+{ key: "вішати носа", val: "засмучуватися, впадати у відчай або втрачати надію" },
+{ key: "вкласти душу", val: "робити щось із великим захопленням" },
+{ key: "вкрутити роги", val: "приборкати когось, змусити підкоритися або провчити за зухвалу поведінку" },
+{ key: "встромляти носа в чиїсь справи", val: "втручатися в те, що тебе не стосується; проявляти зайву цікавість до чужого життя" },
+{ key: "втелющити в голову", val: "змусити когось щось добре запам'ятати або переконати в якійсь думці" },
+{ key: "втерти носа", val: "довести свою перевагу над кимось, перевершити когось у чомусь або провчити" },
+{ key: "вуха розпустити", val: "дуже уважно та з цікавістю слухати" },
+{ key: "в один гуж тягти", val: "діяти злагоджено, спільно працювати над однією справою, мати однакові погляди" },
+{ key: "в одну хвилину", val: "зробити щось надзвичайно швидко, миттєво, без зволікань" },
+{ key: "вавилонське стовпотворіння", val: "велике скупчення людей, де панує гармидер, шум" },
+{ key: "валаамова ослиця", val: "про покірну, мовчазну людину, яка несподівано для всіх починає протестувати або висловлювати свою думку" },
+{ key: "відставляти губу", val: "пишатися, чванитися або виражати незадоволення чи образу" },
+{ key: "вік калатати", val: "жити в постійних турботах, важкій праці або тривогах протягом усього життя" },
+{ key: "вбити осиковий кілок", val: "остаточно з чимось покінчити, зробити неможливим повернення до минулого" },
+{ key: "ввіритися ногам", val: "дуже швидко бігти, тікати, рятуватися втечею" },
+{ key: "взяти бика за роги", val: "діяти рішуче, відразу братися за найважливіше в складній справі" },
+{ key: "вибивати із сідла", val: "позбавляти когось упевненості в собі, виводити з рівноваги або позбавляти звичного способу життя" },
+{ key: "вибити хвіст об тин", val: "зазнати невдачі, поразки" },
+{ key: "вибілювати зуби", val: "сміятися, часто нещиро, глузувати" },
+{ key: "вивести на орбіту", val: "допомогти комусь досягти значного успіху, популярності або високого становища" },
+{ key: "виганяти сім потів", val: "примушувати когось працювати до повного виснаження або самому дуже тяжко працювати" },
+{ key: "викапаний батько", val: "бути надзвичайно схожим на батька (зовні або характером)" },
+{ key: "викинути колінце", val: "зробити щось несподіване, дивне або витівку, яка всіх здивувала" },
+{ key: "викрутитися з халепи", val: "знайти вихід зі скрутного, неприємного або небезпечного становища" },
+{ key: "випікати очі", val: "соромити когось, докоряти за щось або бути причиною сильного сорому" },
+{ key: "вирватися з кігтів", val: "врятуватися від чиєїсь влади, небезпеки або полону" },
+{ key: "висадити в повітря", val: "зруйнувати щось за допомогою вибуху або (у переносному значенні) зірвати чийсь план чи задум" },
+{ key: "висіти на волосині", val: "перебувати у вкрай небезпечному стані, коли будь-якої миті може статися катастрофа" },
+{ key: "витягнути з болота", val: "допомогти комусь вибратися зі скрутного становища, злиднів або аморального середовища" },
+{ key: "вити мотузки", val: "повністю підпорядкувати собі когось, змушувати виконувати будь-які свої забаганки" },
+{ key: "витрачати порох", val: "докладати багато зусиль, енергії або ресурсів для досягнення якоїсь мети" },
+{ key: "витягувати за вуха", val: "всіляко допомагати тому, хто сам не докладає зусиль" },
+{ key: "від вітру валиться", val: "про дуже худу, слабку або хворобливу людину" },
+{ key: "годувати жданиками", val: "обіцяти, але не виконувати" },
+{ key: "голову сушити (ламати)", val: "думати над дуже складним завданням" },
+{ key: "горобина ніч", val: "темна, дуже буряна ніч із дощем, градом та блискавками" },
+{ key: "гнути спину", val: "важко працювати на когось" },
+{ key: "гаряча голова", val: "запальна, нестримна людина" },
+{ key: "геростратова слава", val: "слава, яка була отримана злочинним шляхом або не хорошими вчинками" },
+{ key: "гладити по голові", val: "хвалити, заохочувати" },
+{ key: "ганяти собак", val: "не працювати, нічого не робити; байдикувати" },
+{ key: "гнути коліна", val: "виражати покірність; запобігати перед ким-небудь, підлещуватися до когось" },
+{ key: "голки не підточиш", val: "дуже якісно, так, щоб не було претензій" },
+{ key: "голову гризти", val: "набридати розмовами" },
+{ key: "грати на нервах", val: "дратувати, дражнити кого-небудь, навмисне спричиняти переживання комусь" },
+{ key: "грати очима", val: "грайливо поглядати на когось, прагнучи звернути на себе увагу, викликати інтерес до себе" },
+{ key: "гріти чуба", val: "витрачати багато сил і енергії, старанно виконуючи якусь роботу; тяжко, виснажливо працювати" },
+{ key: "грати першу скрипку", val: "бути головним у якій-небудь справі" },
+{ key: "геркулесові стовпи", val: "крайня межа, крайня точка чого-небудь; далі нікуди" },
+{ key: "годувати бебехами", val: "лупцювати когось" },
+{ key: "гнати в шию", val: "грубо виганяти кого-небудь звідкись або звільняти з роботи" },
+{ key: "гнути горба", val: "дуже тяжко й виснажливо працювати" },
+{ key: "гнути кирпу", val: "триматися гордовито, чванитися, вважати себе вищим за інших" },
+{ key: "ганяти вітер по світу", val: "байдикувати" },
+{ key: "губи в молоці", val: "хтось дуже молодий, недосвідчений, ще «дитина»" },
+{ key: "говорити за спиною", val: "обговорювати, пліткувати про людину, коли вона цього не чує" },
+{ key: "говорити правду в очі", val: "висловлювати все відверто й прямо, не приховуючи неприємних фактів" },
+{ key: "годувати злидні", val: "жити в нестатках, бідувати" },
+{ key: "голова з вухами", val: "нетямуща, некмітлива людина, неспроможна здогадатися про що-небудь або зорієнтуватися в чомусь" },
+{ key: "грати на руку", val: "діяти так, щоб це було вигідно комусь іншому" },
+{ key: "гратися з вогнем", val: "поводитися необережно, ризикувати, наражати себе на небезпеку" },
+{ key: "гріти зуби на сонці", val: "байдикувати, марно теревенити" },
+{ key: "дамоклів меч", val: "небезпека або неприємність, що постійно загрожує комусь" },
+{ key: "давати прочухана", val: "дуже лаяти кого-небудь" },
+{ key: "далеко куцому до зайця", val: "велика різниця між ким-небудь" },
+{ key: "до нових віників", val: "надовго" },
+{ key: "до сьомого поту", val: "дуже виснажливо, понад силу; тяжко" },
+{ key: "давати (дати) відкоша", val: "дати рішучу відсіч, відбити напад" },
+{ key: "давати гастролі", val: "виступати десь (часто іронічно про чиюсь поведінку на людях)" },
+{ key: "давати горобцям дулі", val: "ледарювати, марнувати час" },
+{ key: "давати маху", val: "помилитися, схибити, зробити не те, що треба" },
+{ key: "давати перцю", val: "суворо лаяти, карати або провчати когось" },
+{ key: "дати березової каші", val: "побити, відшмагати (зазвичай дитину за провину)" },
+{ key: "дати гарбуза", val: "відмовити у сватанні" },
+{ key: "де Макар телят пасе", val: "дуже далеко" },
+{ key: "дерти кирпу", val: "поводитися зарозуміло, бути високомірним" },
+{ key: "дерти очі", val: "неприємно вражати, дратувати кого-небудь своїм виглядом; неприємно докоряти кому-небудь чимсь; заздрісно чи з зацікавленням поглядати на кого-, що-небудь" },
+{ key: "дерти по три шкури", val: "нещадно експлуатувати або брати дуже велику плату" },
+{ key: "десята вода на киселі", val: "про дуже далеких, сумнівних родичів" },
+{ key: "дивитися в зуби", val: "виявляти зайву поблажливість, церемонність, запобігливість у поводженні з ким-небудь" },
+{ key: "дивитися в чотири ока", val: "бути надзвичайно пильним й уважним" },
+{ key: "дивитися вовком", val: "ставитися неприязно, вороже, похмуро" },
+{ key: "дивитися крізь пальці", val: "навмисно не помічати чиїхось помилок чи провин" },
+{ key: "душа навстіж", val: "про дуже відверту, щиру та добру людину" },
+{ key: "довгий карбованець", val: "легкий, швидкий і великий заробіток" },
+{ key: "докопатися до кореня", val: "з'ясувати саму суть справи, причину чогось" },
+{ key: "домашнє вогнище", val: "сім'я, родинний затишок, рідний дім" },
+{ key: "думкою багатіти", val: "мріяти про щось нездійсненне, тішити себе ілюзіями" },
+{ key: "дурити голову", val: "обманювати, збивати з пантелику" },
+{ key: "еолова арфа", val: "душа людини, яка відгукується на всі події життя" },
+{ key: "жовтороте пташеня", val: "про недосвідчену людину" },
+{ key: "жити, як горох при дорозі", val: "почуватися незахищеним" },
+{ key: "жити, як у Бога за дверима (пазухою)", val: "жити в достатках" },
+{ key: "жалити язиком", val: "говорити образливі речі" },
+{ key: "за царя Гороха", val: "дуже давно" },
+{ key: "задушити в пузі комара", val: "зовсім мало з'їсти" },
+{ key: "знову за рибу гроші", val: "наполягати на чомусь, домагатися чогось, повторювати те саме" },
+{ key: "золота молодь", val: "діти із дуже заможних сімей, які неприпустимо поводяться й вважають себе безкарними" },
+{ key: "золоте правило", val: "найкраща форма поведінки в усіх випадках" },
+{ key: "золоті верби ростуть", val: "нічого путнього не виходить" },
+{ key: "з-під ринви на дощ", val: "з однієї неприємності в іншу, ще гіршу" },
+{ key: "знімати стружку", val: "суворо лаяти, давати прочухана" },
+{ key: "з доброго дива", val: "невідомо чому, чомусь, без будь-якої причини" },
+{ key: "з душі верне", val: "який відвертає від себе; осоружний" },
+{ key: "з молоком на губах", val: "хтось дуже молодий, неповнолітній, недосвідчений" },
+{ key: "з притиском", val: "твердо, категорично, суворо, незадоволено" },
+{ key: "за версту почути", val: "відразу можна розпізнати, відрізнити від інших кого-, що-небудь" },
+{ key: "за всяку ціну", val: "обов'язково, неодмінно, за всіляких умов, обставин, незважаючи на будь-які труднощі чи перешкоди" },
+{ key: "за милу душу", val: "охоче, з дуже великим задоволенням" },
+{ key: "за тридев'ять земель", val: "дуже далеко" },
+{ key: "заварити кашу", val: "затіяти щось дуже складне, клопітне, що загрожує неприємними наслідками" },
+{ key: "задирати голову", val: "триматися гордовито, зазнаватися, величатися, ставати зарозумілим" },
+{ key: "задирати носа", val: "гордовито триматися, бути чванливим, гонористим; зазнаватися" },
+{ key: "закрутити веремію", val: "здіймати колотнечу, спричиняти неспокій; галасувати, вередувати, навмисне шукати причину для сварки, скандалу" },
+{ key: "зарубати на носі", val: "добре, надовго запам'ятати" },
+{ key: "заходити збоку", val: "говорити про суть справи натяками, репліками" },
+{ key: "збиватися з ніг", val: "дуже втомитися, набігавшись, находившись або від різних клопотів" },
+{ key: "збігло за водою", val: "непомітно і безповоротно зникло щось" },
+{ key: "земля обітована", val: "місце заповітної мрії" },
+{ key: "зі шкури пнутися", val: "старатися з усіх сил" },
+{ key: "знати, де раки зимують", val: "маючи неабиякий досвід, уміти добре розбиратися в ситуації; бути хитрим, спритним" },
+{ key: "зітерти на порох", val: "повністю знищити, розгромити або сильно розкритикувати" },
+{ key: "зривати личину", val: "показувати справжню сутність когось, чогось" },
+{ key: "зривати маску", val: "викривати кого-небудь, показуючи його справжню сутність, істинні наміри" },
+{ key: "з горобину душу", val: "дуже мало" },
+{ key: "з одного тіста книш", val: "про схожих людей" },
+{ key: "зав'язати косу", val: "вийти заміж" },
+{ key: "зачепити за живе", val: "глибоко образити" },
+{ key: "заганяти голки", val: "робити єхидні зауваження, дошкуляти комусь" },
+{ key: "загладити гострі кути", val: "мирно вирішити суперечку" },
+{ key: "загнати на піч", val: "змусити замовкнути" },
+{ key: "задавати тон", val: "бути прикладом для наслідування" },
+{ key: "замести сліди", val: "знищувати, приховувати все, що може викривати які-небудь таємні або несхвальні дії, учинки" },
+{ key: "замилювати очі", val: "обманювати когось" },
+{ key: "замовляти зуби", val: "відвертати увагу сторонніми розмовами" },
+{ key: "занепадати духом", val: "втрачати віру в себе" },
+{ key: "збити пиху", val: "приборкати чиєсь самолюбство, змусити когось стати скромнішим" },
+{ key: "здавати позиції", val: "відступати, втрачати перевагу в чомусь або відмовлятися від своїх поглядів" },
+{ key: "злидні годувати", val: "жити в бідності, бідувати" },
+{ key: "злий геній", val: "людина, яка негативно впливає на когось або є причиною бід та невдач" },
+{ key: "зуби з'їсти", val: "мати великий досвід у якійсь справі" },
+{ key: "зуби сушити", val: "безпричинно сміятися або глузувати з когось" },
+{ key: "і в ступі не втовкти", val: "дуже важко розібратися в чиїх-небудь плутаних діях" },
+{ key: "із себе вискакувати", val: "дуже старатися" },
+{ key: "і ладаном не викурити", val: "неможливо когось позбутися" },
+{ key: "і у вус не дути", val: "не реагувати ні на що, бути спокійним" },
+{ key: "і води не замутить", val: "дуже лагідний, скромний, сумирний" },
+{ key: "і кінці у воду", val: "не залишати ніяких слідів злочину, негідного вчинку" },
+{ key: "і кіт не валявся", val: "хто-небудь ще нічого не робив" },
+{ key: "комар носа не підточить", val: "не буде до чого причепитися, прискіпатися" },
+{ key: "каліф на годину", val: "людина, наділена владою на короткий проміжок часу" },
+{ key: "кишка коротка", val: "про несміливу людину" },
+{ key: "камінь спотикання", val: "велика перешкода" },
+{ key: "канути в Лету", val: "бути назавжди забутим, зникнути безслідно" },
+{ key: "каламутити воду", val: "вносити неспокій, плутанину, провокувати сварки заради власної вигоди" },
+{ key: "камінь на шиї", val: "великий тягар, постійна турбота, що заважає жити або діяти" },
+{ key: "кадити фіміам", val: "надмірно вихваляти когось" },
+{ key: "казитися з жиру", val: "вередувати від занадто доброго, забезпеченого життя" },
+{ key: "купа на купі", val: "у великій кількості" },
+{ key: "купатися в золоті", val: "жити в багатстві, щасливо, мати всього вдосталь" },
+{ key: "кривити душею", val: "бути нещирим, лицемірити" },
+{ key: "кров з молоком", val: "про людину, яка має здоровий вигляд" },
+{ key: "квацяти дьогтем", val: "несправедливо ганьбити, паплюжити чиєсь добре ім'я" },
+{ key: "квітку пришити", val: "іронічно або дошкульно зауважити щось, «підколоти»" },
+{ key: "корчитися в три погибелі", val: "дуже низько нахилятися або принижуватися перед кимось" },
+{ key: "котові на сльози немає", val: "дуже мало" },
+{ key: "крутити хвостом", val: "хитрувати, бути нещирим" },
+{ key: "кувати вухналі зубами", val: "тремтіти від холоду або страху" },
+{ key: "кувати лихо", val: "задумати щось погане проти когось" },
+{ key: "кум королю", val: "бути у виграшному становищі" },
+{ key: "кури не клюють", val: "дуже багато" },
+{ key: "кусати за серце", val: "викликати важкі переживання або докори сумління" },
+{ key: "лавровий вінок", val: "символ слави, перемоги, успіху" },
+{ key: "ламати зуби", val: "зазнавати невдачі, намагаючись зробити щось надто складне" },
+{ key: "ламати лід", val: "робити перший крок у важкій справі" },
+{ key: "ламати на пні", val: "різко припиняти щось, знищувати в самому зародку" },
+{ key: "ламати спину", val: "важко працювати" },
+{ key: "ламати списи", val: "гаряче сперечатися про щось, боротися за щось" },
+{ key: "ламати шапку", val: "принижуватися, виявляти надмірну покірність перед кимось впливовим" },
+{ key: "ламати язик", val: "намагатися вимовити дуже складне слово" },
+{ key: "лебедина пісня", val: "останній (перев. найзначніший) твір, вияв таланту або здібностей кого-небудь або прояву чого-небудь" },
+{ key: "лити піт", val: "дуже важко працювати" },
+{ key: "лізти чортові на роги", val: "наражатися на велику небезпеку без потреби" },
+{ key: "ловити вітрів", val: "шукати того, чого не існує; марно витрачати час" },
+{ key: "ловити кожне слово", val: "слухати дуже уважно, з великим інтересом" },
+{ key: "лудити очі", val: "дурити, обманювати кого-небудь" },
+{ key: "любо оком глянути", val: "про щось дуже гарне, приємне на вигляд" },
+{ key: "ляси точити", val: "вести пусті, беззмістовні розмови; базікати" },
+{ key: "лізти на рожен", val: "провокувати суперечку, не уникати її" },
+{ key: "махнути рукою", val: "не докладати зусиль для досягнення мети" },
+{ key: "милити чуба", val: "робити зауваження, дорікати кому-небудь за щось; лаяти, картати за щось" },
+{ key: "міцний горішок", val: "людина зі складним характером" },
+{ key: "мов з гуски вода", val: "хто-небудь зовсім не реагує на щось; ніщо не впливає, не діє на когось" },
+{ key: "мов на світ народився", val: "хто-небудь відчуває душевний спокій після страждань, переживань, фізичних мук" },
+{ key: "мозолити руки", val: "займатися фізичною працею; працювати" },
+{ key: "міняти шило на швайку", val: "робити зміни без користі" },
+{ key: "мороз пробирає по спині", val: "комусь стає холодно (від страху, хвилювання)" },
+{ key: "мотати на вус", val: "придивлятися, прислухатися до чого-небудь; помічати" },
+{ key: "мухи не зобидить", val: "хто-небудь дуже добрий, сумирний, лагідний" },
+{ key: "на все горло", val: "дуже голосно" },
+{ key: "м'яти ханьки", val: "ледарювати" },
+{ key: "мазати медом по губах", val: "говорити комусь приємні речі, щоб улестити або задобрити; обіцяти щось привабливе" },
+{ key: "мандрони плести", val: "говорити нісенітниці, дурниці або пусті, неправдиві речі" },
+{ key: "манна небесна", val: "несподівані життєві блага, що даються легко, без зусиль" },
+{ key: "ману пускати", val: "збивати з пантелику, заплутувати, вводити в оману" },
+{ key: "масний на язик", val: "нещирий; облесливий" },
+{ key: "мастити словами", val: "улещувати когось, говорити приємні, ласкаві слова з корисливою метою" },
+{ key: "мати голову на плечах", val: "бути розумним, кмітливим, розсудливим" },
+{ key: "мертвий капітал", val: "гроші, майно або знання, які не використовуються і не приносять користі" },
+{ key: "метати громи й блискавки", val: "дуже гніватися, лютувати" },
+{ key: "мишей топтати", val: "без потреби тинятися, ходити туди й сюди" },
+{ key: "міряти воду решетом", val: "займатися марною, безглуздою справою, яка не дає результату" },
+{ key: "мозолити очі", val: "набридати своєю присутністю, постійно бути на виду в когось, дратувати" },
+{ key: "молоти язиком", val: "базікати, вести пусті, беззмістовні розмови" },
+{ key: "море по коліно", val: "про сміливу людину, якій нічого не страшно" },
+{ key: "мов із хреста знятий", val: "про людину, яка має дуже хворобливий, виснажений вигляд" },
+{ key: "на макове зерно", val: "дуже мало, зовсім трішки" },
+{ key: "на вербі груші", val: "нісенітниці, дурниці" },
+{ key: "на голові ходити", val: "пустувати, бешкетувати" },
+{ key: "на голову вилізти", val: "поводитися зухвало" },
+{ key: "на короткій нозі", val: "у приятельських стосунках" },
+{ key: "накрити мокрим рядном", val: "накинутися з погрозами, докорами" },
+{ key: "не бачити лісу за деревами", val: "не помічати головного" },
+{ key: "невелике цабе", val: "про особу, що не має великого впливу" },
+{ key: "не із заячого пуху", val: "сміливий" },
+{ key: "не нашого поля ягода", val: "хтось, хто відрізняється діяльністю, світоглядом" },
+{ key: "не обібратися лиха", val: "мати багато клопоту" },
+{ key: "ні в тин ні у ворота", val: "недоречно, невлучно" },
+{ key: "ні за цапову душу", val: "цілком даремно" },
+{ key: "ні кола ні хвоста", val: "нічого не мати" },
+{ key: "ні тепер ні в четвер", val: "ніколи, ні за яких обставин" },
+{ key: "на один аршин", val: "підходити до різних людей чи явищ однаково, не враховуючи особливостей" },
+{ key: "на сьомому небі", val: "бути безмежно щасливим, задоволеним" },
+{ key: "набивати мозолі", val: "важко працювати" },
+{ key: "набити собі руку", val: "набути досвіду, майстерності, вправності в якійсь справі" },
+{ key: "набити черево", val: "дуже сильно наїстися" },
+{ key: "набрати в рот води (набрати води в рот)", val: "вперто мовчати, нічого не говорити" },
+{ key: "нагріти руки", val: "нажитися на чомусь нечесним шляхом, отримати легкий прибуток" },
+{ key: "нагуляти жиру", val: "поправлятися, товстіти" },
+{ key: "накручувати хвоста", val: "примушувати когось до дії, суворо лаяти або підганяти" },
+{ key: "нам'яти вуха", val: "побити когось або суворо покарати, провчити" },
+{ key: "нам'яти чуба", val: "побити когось, дати прочухана" },
+{ key: "напустити пихи", val: "зазнаватися, триматися гордовито" },
+{ key: "наріжний камінь", val: "основа, головна ідея, на якій базується що-небудь" },
+{ key: "наступати на горло", val: "настирливо вимагати від когось чого-небудь або спонукати, примушувати до чогось" },
+{ key: "наступати на пальці", val: "кривдити когось, не рахуватися з ким-небудь" },
+{ key: "не в тім'я битий", val: "розумна, кмітлива людина" },
+{ key: "не покладати рук", val: "працювати дуже старанно, невтомно, без перепочинку" },
+{ key: "не розлий вода", val: "про дуже міцну дружбу" },
+{ key: "не у своїй тарілці", val: "почуватися ніяково" },
+{ key: "не чути землі під собою", val: "бути в надзвичайно піднесеному настрої або дуже швидко бігти" },
+{ key: "ні вдень ні вночі", val: "ніколи" },
+{ key: "ні проїхати ні пройти", val: "про велике скупчення людей, речей або про дуже погану дорогу" },
+{ key: "ні риба ні м'ясо", val: "безвольний, безхарактерний; ніякий" },
+{ key: "носити на руках", val: "виявляти велику увагу, турботу, надмірно вихваляти" },
+{ key: "на всю губу", val: "великий, значний; заможний, багатий" },
+{ key: "на живу нитку", val: "як-небудь, аби було з'єднане докупи, щоб не розпалося" },
+{ key: "на рівному місці", val: "без якихось видимих причин, безпідставно" },
+{ key: "на чистоту", val: "прямолінійно, щиро, відверто" },
+{ key: "надягати машкару", val: "приховувати свою справжню сутність" },
+{ key: "не відривати очей", val: "весь час, уважно, пильно дивитися на кого-, що-небудь, стежити за ким або чимсь; милуватися ким-, чим-небудь" },
+{ key: "намотати на вус", val: "запам'ятовувати, брати до уваги що-небудь" },
+{ key: "не показувати очей", val: "не приходити, не з'являтися куди-небудь, до когось" },
+{ key: "не за горами", val: "на невеликій відстані; недалеко, близько; у найближчому майбутньому, незабаром, скоро" },
+{ key: "не йти з думки", val: "мати нав'язливу думку, хтось не може забути, постійно думає, згадує про когось, щось" },
+{ key: "ні гаряче ні зимно", val: "байдуже" },
+{ key: "неопалима купина", val: "те, що живе вічно" },
+{ key: "ні кілка ні дрючка", val: "нічого" },
+{ key: "ні пари з вуст", val: "нічого не говорити, затято мовчати" },
+{ key: "ні світ ні зоря", val: "рано" },
+{ key: "ні сіло ні впало", val: "зовсім несподівано, раптово; безпідставно; невідомо чому" },
+{ key: "оббивати пороги", val: "набридати комусь із певними проханнями" },
+{ key: "обдерти як липку", val: "забрати все у когось" },
+{ key: "останній з могікан", val: "найстаріший, єдиний у своєму роді представник покоління" },
+{ key: "очей у Сірка позичати", val: "зовсім втратити сором" },
+{ key: "облизня піймати", val: "потерпіти невдачу, залишитися ні з чим" },
+{ key: "очей не відведеш", val: "хто-, що-небудь надзвичайно вродливий, гарний, привабливий зовні" },
+{ key: "обвести навколо пальця", val: "спритно обдурити, перехитрити когось" },
+{ key: "обернути в попіл", val: "повністю знищити, спопелити" },
+{ key: "обламати крила", val: "позбавити когось мрій, натхнення або можливості діяти" },
+{ key: "обливатися слізьми", val: "гірко плакати" },
+{ key: "облизати макогона", val: "зазнати невдачі, залишитися ні з чим" },
+{ key: "обминати гострі кути", val: "уникати конфліктів, обходити суперечливі теми" },
+{ key: "об'їсти вуха", val: "настирливо просити щось або дуже сильно набридати розмовами" },
+{ key: "одним миром мазані", val: "про людей з однаковими недоліками або схожою поведінкою" },
+{ key: "опустити руки", val: "втратити надію, припинити боротьбу чи діяльність через зневіру" },
+{ key: "пахне смаленим", val: "загрожує небезпека" },
+{ key: "пекти раків", val: "червоніти" },
+{ key: "повна чаша", val: "усього вдосталь" },
+{ key: "пускати віжики", val: "не тримати когось у залежності, давати свободу" },
+{ key: "просити в пір'я", val: "змужніти, набратися сил" },
+{ key: "пасти задніх", val: "відставати від когось або поступатися перед кимось у чому-небудь" },
+{ key: "по струні ходити", val: "підкорятися, виконувати чиїсь побажання" },
+{ key: "притча во язицех", val: "бути об'єктом постійних пересудів" },
+{ key: "приший кобилі хвіст", val: "про когось зайвого, не причетного до чогось" },
+{ key: "пускати на вітер", val: "розтринькувати гроші" },
+{ key: "п'яте колесо у возі", val: "щось зайве, непотрібне" },
+{ key: "палицею кинути", val: "близько, недалеко" },
+{ key: "пальцем не ворухнути", val: "зовсім нічого не зробити для здійснення чого-небудь" },
+{ key: "перемінитися на лиці", val: "набувати незадоволеного, часом нездорового виразу обличчя у зв'язку з чим-небудь; переживати, нервувати, червоніти, бліднути" },
+{ key: "під дудку стрибати", val: "діяти, перебувати під чужим впливом" },
+{ key: "підвернутися під руку", val: "випадково опинитися поблизу" },
+{ key: "підносити до небес", val: "надмірно вихваляти кого-небудь" },
+{ key: "піймати синицю в руку", val: "досягти чогось важливого, бажаного" },
+{ key: "піррова перемога", val: "сумнівна перемога, що не виправдовує жертв" },
+{ key: "плескати язиком", val: "багато говорити про щось неістотне, пусте; базікати, теревенити" },
+{ key: "плести химери", val: "говорити щось пусте, неістотне" },
+{ key: "подавати руку", val: "підтримувати когось, допомагати кому-небудь у скрутний для нього час" },
+{ key: "показати товар лицем", val: "представити що-небудь з кращого боку, у найкращій якості" },
+{ key: "показати, де раки зимують", val: "провчити кого-небудь, завдаючи йому неприємностей, прикрощів" },
+{ key: "поливати брудом", val: "несправедливо звинувачувати когось у чомусь; обмовляти, неславити, ганьбити" },
+{ key: "попасти на слизьке", val: "опинитися в скрутному становищі" },
+{ key: "пороху не вигадає", val: "позбавлений кмітливості, який не може додуматися до чогось, здогадатися про щось" },
+{ key: "поставити на карту", val: "ризикувати чим-небудь заради мети, успіху" },
+{ key: "поставити на місце", val: "певними діями, зауваженнями змусити когось опам'ятатися від зарозумілості, нескромності" },
+{ key: "поставити на ноги", val: "виростити, виховати когось" },
+{ key: "поставити на чолі", val: "надати провідної ролі, зробити керівником, вождем кого-, чого-небудь" },
+{ key: "поставити перед фактом", val: "повідомляти про те, що вже відбулося, сталося" },
+{ key: "потрапити в павутину", val: "потрапити в безвихідну ситуацію" },
+{ key: "потрапити в тенета", val: "опинитися в скрутному становищі, у несприятливих умовах; опинитися під впливом чого-небудь" },
+{ key: "починати здалека", val: "не розкривати одразу своїх думок, намірів; говорити натяками" },
+{ key: "пельку рвати", val: "дуже голосно кричати, волати" },
+{ key: "прописати іжицю", val: "суворо покарати кого-небудь, картати, дорікати, лаяти" },
+{ key: "пускати бісики", val: "кокетувати, загравати з ким-небудь" },
+{ key: "птах високого польоту", val: "людина, яка займає значне становище в суспільстві і має владу, вагу, великий вплив у якомусь колективі" },
+{ key: "пустити червоного півня", val: "підпалити що-небудь, викликати пожежу з метою розплати, помсти" },
+{ key: "палити душу", val: "дуже хвилювати, непокоїти, завдавати болю, муку" },
+{ key: "пальцем не зачепити", val: "зовсім не образити, не завдати ніякої шкоди" },
+{ key: "пальці знати", val: "зробити що-небудь недбало, грубо, невміло" },
+{ key: "подати голос", val: "висловити свою думку або нагадати про себе" },
+{ key: "перегинати палку", val: "виходити за межі дозволеного, перебільшувати в діях" },
+{ key: "передати куті меду", val: "перевищувати норму, міру в чому-небудь або перебільшувати що-небудь" },
+{ key: "перейти Рубікон", val: "робити рішучий крок, приймаючи остаточне рішення, яке має важливе значення і впливає на подальші події" },
+{ key: "переливати з пустого в порожнє", val: "вести беззмістовні, пусті розмови" },
+{ key: "перемивати кісточки", val: "пліткувати про когось, детально обговорювати чужі недоліки" },
+{ key: "переходити дорогу", val: "ставати на заваді комусь, заважати здійснити наміри" },
+{ key: "підводне каміння", val: "приховані небезпеки, труднощі або перешкоди" },
+{ key: "піджати хвоста", val: "злякатися, втратити впевненість, скоритися" },
+{ key: "підлити масла у вогонь", val: "підсилювати суперечку, загострювати конфлікт" },
+{ key: "побувати в бувальцях", val: "мати великий життєвий досвід, багато бачити" },
+{ key: "піднімати носа", val: "ставати зарозумілим, пихатим" },
+{ key: "пійматися в лабети", val: "потрапити в скрутне становище, у залежність від когось" },
+{ key: "плестися у хвості", val: "відставати від інших, бути серед останніх" },
+{ key: "пливти проти течії", val: "діяти всупереч усталеним нормам або загальній думці" },
+{ key: "показати п'яти", val: "швидко тікати звідкись" },
+{ key: "покласти зуби на полицю", val: "голодувати" },
+{ key: "попасти в масть", val: "зробити або сказати щось дуже вчасно і доречно" },
+{ key: "похиле дерево", val: "про беззахисну людину, яку кожен може образити" },
+{ key: "прибитий на цвіту", val: "про когось обмеженого, нерозумного або того, кому не пощастило з самого початку" },
+{ key: "пристати до берега", val: "знайти спокій, стабільність, закінчити мандри" },
+{ key: "продавати зуби", val: "безпричинно або недоречно сміятися" },
+{ key: "прокрустове ложе", val: "штучні, надто суворі рамки, у які намагаються щось втиснути" },
+{ key: "пропустити повз вуха", val: "не звернути уваги на сказане, проігнорувати" },
+{ key: "прясти очима", val: "швидко оглядати кого-, що-небудь або раз у раз поглядати на кого-, що-небудь, швидко переводячи погляд" },
+{ key: "пуд солі з'їсти", val: "прожити з кимось довгий час, добре пізнати людину" },
+{ key: "пускати ману", val: "обманювати когось" },
+{ key: "пускати сльози", val: "гірко плакати" },
+{ key: "пускати стріли", val: "говорити щось неприємне, уїдливо, дошкульно говорити" },
+{ key: "пустити в старці", val: "розорити когось, зробити жебраком, змусити просити милостиню" },
+{ key: "пустити за вітром", val: "розтринькати, безглуздо витратити щось" },
+{ key: "пустити на вітер", val: "марно витратити" },
+{ key: "пустити півня", val: "підпалити що-небудь, викликати пожежу з метою розплати, помсти" },
+{ key: "пустити сльозу", val: "заплакати" },
+{ key: "пустити туман в очі", val: "навмисно заплутувати, вводити в оману, приховувати правду, створюючи хибне враження" },
+{ key: "пустити шпильку", val: "уїдливо, дошкульно висловитися на чиюсь адресу; зробити тонкий, але образливий натяк" },
+{ key: "пхати палки в колеса", val: "заважати кому-небудь у здійсненні задумів" },
+{ key: "рвати кігті", val: "дуже швидко втікати" },
+{ key: "рвати боки", val: "нестримно, безугавно сміятися, реготати; надриватися від реготу" },
+{ key: "рвати вуха", val: "викликати неприємні відчуття, вражати (про звуки)" },
+{ key: "рвати горло", val: "дуже кричати, галасувати" },
+{ key: "рвати руки", val: "дуже важко, багато, з надмірним напруженням, над силу працювати" },
+{ key: "розкривати карти", val: "переставати приховувати свої (або чиїсь) плани, наміри тощо; починати діяти відкрито" },
+{ key: "розуму не позичати", val: "хто-небудь дуже розумний, тямущий" },
+{ key: "рота не розкрити", val: "мовчати, нічого не говорити" },
+{ key: "руки загребущі", val: "хто-небудь дуже жадібний, ненаситний, прагне до наживи" },
+{ key: "руки сверблять", val: "дуже хочеться" },
+{ key: "руки не доходять", val: "хто-небудь не може займатися чимсь, робити щось, переважно через велику зайнятість, брак часу" },
+{ key: "руки не підіймаються", val: "не вистачає рішучості; сумління не дозволяє щось зробити" },
+{ key: "рити землю очима", val: "бути надзвичайно зосередженим або лютим; дуже старатися щось знайти" },
+{ key: "різати правду в очі", val: "говорити щиро, відверто, навіть якщо це неприємно" },
+{ key: "робити очки", val: "кокетувати з кимось" },
+{ key: "робити погоду", val: "вирішально впливати на що-небудь, бути визначальним" },
+{ key: "розбивати лобом горіхи", val: "марно витрачати зусилля, час, займаючись пустою справою" },
+{ key: "розбити глека", val: "посваритися" },
+{ key: "розв'язати руки", val: "дати можливість діяти вільно, на власний розсуд" },
+{ key: "розв'язати язик", val: "змусити заговорити або самому почати багато говорити" },
+{ key: "розв'язувати душу", val: "щиро ділитися таємницями, виповідати все" },
+{ key: "розвішувати вуха", val: "слухати дуже уважно, з надмірною цікавістю або надто довірливо" },
+{ key: "розводити кислиці", val: "рюмсати, плакати" },
+{ key: "розводити Химині кури", val: "говорити про що-небудь пусте, не варте уваги" },
+{ key: "розгубити розум", val: "втратити здатність тверезо мислити; сильно розгубитися" },
+{ key: "руки короткі", val: "не мати достатньої влади чи можливостей, щоб щось змінити" },
+{ key: "руки нагріти", val: "нажитися в нечесний спосіб" },
+{ key: "руки опускаються", val: "утратити інтерес до чогось, ставати бездіяльним" },
+{ key: "ряст топтати", val: "жити" },
+{ key: "садити на хліб та на воду", val: "карати кого-небудь голодом, обмежуючи найнеобхіднішим у їжі" },
+{ key: "світла голова", val: "розумна, кмітлива людина" },
+{ key: "сізіфова праця", val: "надзвичайні зусилля, спрямовані на досягнення чогось, які не дають бажаних результатів; непосильне щось" },
+{ key: "сім п'ятниць на тиждень", val: "часта й легка зміна своїх рішень" },
+{ key: "сісти в калюжу", val: "потрапити в дуже незручне або смішне становище; зазнавати в чомусь невдачі" },
+{ key: "скреготати зубами", val: "виявляти гнів, роздратування, невдоволення" },
+{ key: "слова не видавиш", val: "хтось мовчазний, неговіркий, небалакучий" },
+{ key: "спáсти з лиця", val: "ставати блідим, змученим; марніти" },
+{ key: "співати дифірамби", val: "захвалювати кого-небудь; вихваляти щось" },
+{ key: "ставати дибки", val: "не погодитися з чим-небудь, запротестувати" },
+{ key: "стелитися під ноги", val: "догоджати кому-небудь, принижуючись та втрачаючи людську гідність" },
+{ key: "ситий і вкритий", val: "забезпечений усім необхідним для існування" },
+{ key: "стріляний горобець", val: "досвідчена, бувала людина, яку тяжко перехитрити, обдурити" },
+{ key: "сухий хліб їсти", val: "жити в нестатках, у бідності, нужді" },
+{ key: "сховатися в шкаралущу", val: "не довіряти нікому, заглибитися у власні переживання" },
+{ key: "садовити на покуті", val: "надавати кому-небудь чинних прав" },
+{ key: "сам на сам", val: "один, без нікого; удвох, без сторонніх; своїми силами, без чиєї-небудь підтримки; самостійно" },
+{ key: "сам не свій", val: "бути в стані сильного хвилювання, розгубленості, болю" },
+{ key: "сам собі пан", val: "незалежна, вільна у своїх діях, вчинках людина" },
+{ key: "самозакоханий Нарцис", val: "самозакохана людина, яка милується собою і своїми вчинками" },
+{ key: "свербить на кінці язика", val: "кому-небудь дуже хочеться розповісти щось" },
+{ key: "світити косою", val: "дівувати, бути незаміжньою" },
+{ key: "сон рябої кобили", val: "нісенітниця, щось безглузде" },
+{ key: "серце їсти", val: "переживати, журитися, каратися, мучитися" },
+{ key: "серце каменем лежить", val: "хто-небудь тяжко переживає, страждає з приводу чогось" },
+{ key: "серце мовчить", val: "хто-небудь залишається байдужим до когось, чогось" },
+{ key: "серце мохом обростає", val: "хто-небудь стає бездушним, байдужим до всього і всіх" },
+{ key: "сидіти в кишені", val: "бути в повній фінансовій залежності від кого-небудь; бути чиїмсь боржником" },
+{ key: "сидіти на пороховому погребі (на пороховій бочці)", val: "перебувати під загрозою небезпеки, катастрофи" },
+{ key: "сидіти на сухому", val: "потрапляти в несприятливе, скрутне становище" },
+{ key: "сидіти на троні (на престолі)", val: "царювати, правити, бути монархом" },
+{ key: "сидіти на двох стільцях", val: "намагатися водночас догодити двом протилежним сторонам" },
+{ key: "сидіти на чемоданах", val: "зібравши і склавши в дорогу речі, чекати від'їзду; вважати тимчасовим місце своєї роботи, проживання" },
+{ key: "сидіти на шиї", val: "бути під чиєюсь опікою, на чиєму-небудь утриманні, матеріально обтяжуючи когось" },
+{ key: "сидіти склавши руки", val: "ледарювати" },
+{ key: "сипати вогнем", val: "дуже сердито, гнівно розмовляти" },
+{ key: "сісти каменем", val: "починати виконувати якусь роботу наполегливо, без перерви" },
+{ key: "сісти маком", val: "потрапити в скрутне, безвихідне становище; зазнати поразки, невдачі в чому-небудь" },
+{ key: "сісти на голову", val: "знахабніти" },
+{ key: "сісти на їжака", val: "здійснити, подолати що-небудь дуже складне або неможливе" },
+{ key: "сісти на лід", val: "невдало завершити яку-небудь справу, опинитися в скрутному становищі" },
+{ key: "сісти на мілину", val: "потрапити в скрутне, безвихідне або незручне становище" },
+{ key: "скалити зуби", val: "сміятися, часто недоречно або злорадно" },
+{ key: "скинутися очима", val: "переглянутися, перезирнутися один з одним" },
+{ key: "скніти душею", val: "страждати, мучитися; турбуватися про кого-, що-небудь, тривожитися за когось" },
+{ key: "скорчити Лазаря", val: "прикинутися безталанним, нещасним" },
+{ key: "скуштувати каші", val: "зазнати багато горя, лиха; набідуватися" },
+{ key: "смішки справляти", val: "жартувати, розважатися тоді, коли треба бути серйозним" },
+{ key: "сміятися на кутні", val: "плакати" },
+{ key: "снувати химери", val: "фантазувати, мріяти про щось нездійсненне" },
+{ key: "собаку з'їсти", val: "мати великий досвід у якійсь справі" },
+{ key: "співати на все горло", val: "дуже голосно співати або кричати" },
+{ key: "спіймати облизня", val: "залишитися ні з чим, зазнати невдачі" },
+{ key: "ставати (стати) на рушник", val: "одружитися" },
+{ key: "стати на ноги", val: "стати самостійним, зміцніти матеріально" },
+{ key: "стояти біля керма", val: "керувати організацією, державою чи справою" },
+{ key: "сім мішків гречаної вовни", val: "наговорити дурниць" },
+{ key: "сушити зуби", val: "сміятися" },
+{ key: "схрестити багнети", val: "вступити в суперечку, боротьбу або двобій" },
+{ key: "спочити в Бозі", val: "померти" },
+{ key: "старий лис", val: "підступна хитра людина" },
+{ key: "сходити на пси", val: "зводитися нінащо" },
+{ key: "темний ліс", val: "щось зовсім незрозуміле, заплутане" },
+{ key: "тертий калач", val: "досвідчена людина, яка багато бачила в житті" },
+{ key: "тикати пальцем", val: "звертати увагу на чиїсь недоліки; відкрито звинувачувати" },
+{ key: "тинятися з кутка в куток (без діла, дарма)", val: "марно гаяти час, байдикувати" },
+{ key: "тинятися з торбами", val: "жебракувати, просити милостиню, старцювати" },
+{ key: "тинятися по світу", val: "постійно змінювати місце проживання, перебування, не маючи притулку" },
+{ key: "топтати чоботи", val: "багато ходити; марно витрачати час" },
+{ key: "точити баляси", val: "вести пусті розмови, базікати" },
+{ key: "тримати в лабетах", val: "тримати в повній залежності, не давати волі" },
+{ key: "тримати в чорному тілі", val: "поводитися з кимось дуже суворо, обмежувати" },
+{ key: "тримати камінь за пазухою", val: "приховувати злобу проти когось, бути готовим помститися" },
+{ key: "тримати хвіст трубою", val: "не втрачати мужності, бути впевненим у собі" },
+{ key: "тримати язик за зубами", val: "мовчати" },
+{ key: "триматися в тіні", val: "не привертати до себе уваги, не виявляти своєї активності" },
+{ key: "триматися за спідницю", val: "не виявляти самостійності, підкорятися впливу якої-небудь жінки" },
+{ key: "триматися зубами", val: "міцно, усіма силами за щось чіплятися" },
+{ key: "триматися купи", val: "бути разом, діяти спільно" },
+{ key: "триматися осторонь", val: "не втручатися в щось, бути відчуженим" },
+{ key: "тріщати по швах", val: "руйнуватися, бути на межі краху" },
+{ key: "трубити в кулак", val: "плакати" },
+{ key: "трусити гаманцем", val: "витрачати багато грошей" },
+{ key: "трусити кишені", val: "забирати в когось усі гроші" },
+{ key: "трусити штаньми", val: "дуже боятися" },
+{ key: "тягти волинку", val: "навмисно затягувати справу, зволікати" },
+{ key: "тягти жили", val: "виснажувати когось працею або вимогами" },
+{ key: "тягти за язик", val: "змушувати когось висловитися, коли він того не хоче" },
+{ key: "тягти лямку", val: "виконувати важку, одноманітну роботу протягом тривалого часу" },
+{ key: "теревені правити", val: "говорити про щось незначне, дріб'язкове, марнуючи час; займатися балаканиною; говорити дурниці, нісенітниці; базікати" },
+{ key: "топтати ряст", val: "жити" },
+{ key: "ткнути пальцем у небо", val: "сказати навмання" },
+{ key: "тримати хвіст бубликом", val: "не журитися, зберігати почуття оптимізму; бути впевненим" },
+{ key: "тягти руку", val: "підтримувати когось, поділяючи його погляди; діяти в чиїх-небудь інтересах" },
+{ key: "ухопити шилом патоки", val: "зазнати невдачі; невдало зробити що-небудь; не досягти нічого" },
+{ key: "у порожній слід прийти", val: "нікого не застати; даремно прийти" },
+{ key: "у вогонь і воду", val: "куди завгодно; на все (разом у вогонь і воду)" },
+{ key: "ударити по руках", val: "домовитися про щось, укласти угоду" },
+{ key: "узяти себе в руки", val: "опанувати свої почуття, заспокоїтися" },
+{ key: "укласти в голову", val: "змусити зрозуміти щось; добре запам'ятати" },
+{ key: "укласти в копи", val: "дуже багато їсти, з'їдати чого-небудь" },
+{ key: "умиватися сльозами", val: "гірко плакати" },
+{ key: "у неславі ходити", val: "мати погану репутацію" },
+{ key: "утнути хвоста", val: "обмежити когось, підрізати крила" },
+{ key: "укрутити хвоста", val: "приборкати, домогтися послуху" },
+{ key: "уривати терпець", val: "доводити кого-небудь до втрати ним рівноваги, спокою" },
+{ key: "узяти в шори", val: "гостро розкритикувати когось" },
+{ key: "у свинячий (собачий) голос", val: "несвоєчасно, дуже пізно" },
+{ key: "фільчина грамота", val: "документ, що не має юридичної сили; пустий папірець" },
+{ key: "халявки смалити", val: "залицятися" },
+{ key: "хапати з вогню", val: "діяти дуже швидко, рішуче" },
+{ key: "хапати за поли", val: "настирливо, невідступно просити, вимагати в кого-небудь щось" },
+{ key: "хапатися за живіт", val: "дуже сильно сміятися" },
+{ key: "хапатися за життя", val: "намагатися вижити за будь-яких обставин" },
+{ key: "хапкий на руку", val: "схильний до крадіжок" },
+{ key: "хвіст собачий", val: "про людину, що не має ніякого впливу або значення" },
+{ key: "ходити довкола", val: "не говорити прямо, уникати суті справи" },
+{ key: "хоч в око стрель", val: "дуже темно" },
+{ key: "хоч греблю гати", val: "дуже багато" },
+{ key: "хоч до рани прикладай", val: "про дуже добру, лагідну людину" },
+{ key: "хоч конем грай", val: "дуже просторо" },
+{ key: "хоч кіл на голові теши", val: "про дуже вперту або нетямущу людину" },
+{ key: "хоч мак сій", val: "дуже тихо, безвітряно" },
+{ key: "хоч мотузки крути", val: "про людину з дуже м'яким характером, якою легко керувати" },
+{ key: "хоч око вийми", val: "дуже темно" },
+{ key: "хоч свічки ліпи", val: "про дуже лагідну людину" },
+{ key: "хоч трава не рости", val: "абсолютна байдужість до наслідків" },
+{ key: "хоч у вухо бгай", val: "про дуже сумирну, лагідну людину" },
+{ key: "цідити крізь зуби", val: "говорити неохоче, зі злістю або презирством" },
+{ key: "хоч відбавляй", val: "дуже багато" },
+{ key: "хоч вовком вий", val: "уживається для вираження безвихідного, скрутного становища, великого відчаю, досади через неможливість що-небудь змінити" },
+{ key: "хоч голки збирай", val: "видно, ясно" },
+{ key: "хома невірний", val: "про людину, яка завжди сумнівається, нікому не вірить" },
+{ key: "хоч з лиця воду пий", val: "дуже гарний, вродливий (хоч за раму клади, хоч картину малюй, хоч у рамці вправ)" },
+{ key: "хоч кричи", val: "уживається для вираження надзвичайно скрутного або безвихідного становища, відчаю" },
+{ key: "хоч оком світи", val: "темно" },
+{ key: "хоч з гармати стріляй", val: "про дуже міцний сон або про байдужість людини" },
+{ key: "честь мундира", val: "гідність особи як представника певної організації" },
+{ key: "через гречку перегнати", val: "суворо покарати, провчити" },
+{ key: "через пень колоду", val: "робити щось недбало, як-небудь" },
+{ key: "читати молитву", val: "лаяти, вичитувати когось за провину" },
+{ key: "чужий хліб заїдати", val: "жити за чийсь рахунок, бути утриманцем" },
+{ key: "шапкою докинути", val: "дуже близько, зовсім поруч" },
+{ key: "язика проковтнути", val: "раптово замовкнути" },
+{ key: "як голка в сіно", val: "зникнути безслідно" },
+{ key: "як грім серед ясного неба", val: "раптово, несподівано" },
+{ key: "як дві краплі води", val: "дуже схожі між собою" },
+{ key: "як з гуски вода", val: "комусь усе байдуже, ніякі зауваження не діють" },
+{ key: "як за гріш маку", val: "дуже багато" },
+{ key: "як кішка із собакою", val: "жити в постійних чварах, ворогувати" },
+{ key: "як муха в окропі", val: "бути дуже зайнятим, заклопотаним" },
+{ key: "як на долоні", val: "дуже ясно, чітко, зрозуміло" },
+{ key: "як на дріжджах", val: "дуже швидко рости або розвиватися" },
+{ key: "як палицею докинути", val: "дуже близько" },
+{ key: "як по маслу", val: "легко, успішно, без перешкод" },
+{ key: "як на пожежу", val: "дуже голосно; дуже швидко" },
+{ key: "як риба з водою", val: "почуватися дуже добре, природно" },
+{ key: "як свиня на коня", val: "зовсім неподібний, несхожий" },
+{ key: "як сніг на голову", val: "раптово" },
+{ key: "як торішній сніг", val: "щось зовсім непотрібне" },
+{ key: "як у бога за дверима", val: "у повному достатку, спокої та безпеці" },
+{ key: "як у воду опущений", val: "засмучений, пригнічений" },
+{ key: "як у кота сліз", val: "дуже мало" },
+{ key: "ятрити душу", val: "завдавати важких душевних переживань, ятрити старі рани" },
+{ key: "що б там не було", val: "за будь-яких умов, обставин; неодмінно" },
+{ key: "язик без кісток", val: "хто-небудь занадто балакучий, говіркий" },
+{ key: "як бджіл у вулику", val: "дуже багато, безліч" },
+{ key: "як білка в колесі", val: "бути постійно заклопотаним, мати багато роботи, турбот" },
+{ key: "як в око вліпити", val: "сказати доречно, влучно" },
+{ key: "як гора з плечей", val: "хтось відчув полегшення, звільнившись від важких обов'язків, сумнівів, турбот" },
+{ key: "як горіхи лущити", val: "виконувати легко, без зусиль" },
+{ key: "як гриби після дощу", val: "швидко й у великій кількості" },
+{ key: "як з воску зліплений", val: "дуже виснажений, блідий, змарнілий" },
+{ key: "як з місяця впасти", val: "не знати того, що відоме всім" },
+{ key: "як засватана дівка", val: "несміливий" },
+{ key: "як камінь з душі", val: "кому-небудь стало легко, спокійно; хто-небудь відчуває душевну полегкість, заспокоївся" },
+{ key: "як камінь під гору котити", val: "докладати зусиль, дуже важко" },
+{ key: "як кіт наплакав", val: "дуже мало" },
+{ key: "як курка лапою", val: "недбало, неохайно, неакуратно" },
+{ key: "як лисому гребінь", val: "уживається для виразу категоричного заперечення змісту зазначених слів; зовсім не треба (потрібно)" },
+{ key: "як мильна бульбашка", val: "тимчасовий" },
+{ key: "як мокре горить", val: "повільно" },
+{ key: "як на вугіллі", val: "у стані дуже сильного хвилювання, збудження" },
+{ key: "як на голках", val: "у стані надзвичайного нервового збудження, збентеження, хвилювання; неспокійно, тривожно, нетерпляче" },
+{ key: "як п'яте колесо", val: "зайвий" },
+{ key: "як рак свисне", val: "невідомо скільки, невідомо коли, дуже довго" },
+{ key: "як горохом об стіну", val: "не можна вплинути на когось" },
+{ key: "як свої п'ять пальців", val: "дуже добре, досконало" },
+{ key: "як Сірку муху з'їсти", val: "дуже легко" },
+{ key: "як торішні бублики", val: "щось непотрібне, зайве" },
+{ key: "як у воду дивитися", val: "безпідставно передбачати що-небудь, пророкувати" },
+{ key: "як собака на сіні", val: "ні собі, ні іншим" },
+{ key: "як у рот води набрав", val: "втративши здатність або бажання говорити, мовчати; мовчки" },
+{ key: "як у тумані", val: "нечітко, невиразно" },
+{ key: "як церковна миша", val: "бідний" },
+{ key: "як чорна хмара", val: "дуже сумний, похмурий, невеселий, невдоволений" },
+{ key: "як зіницю ока берегти", val: "дбайливо, старанно оберігати" },
+{ key: "як із рога достатку", val: "невичерпно, у дуже великій кількості" },
+{ key: "як по нотах", val: "як задумано, як слід" },
+{ key: "як риба у воді", val: "почуватися добре, вільно" },
+{ key: "як собака в човні", val: "почуватися незручно, невпевнено" },
+{ key: "як сірко на базарі", val: "пропасти без сліду" },
+    ];
+
+    const allEngVocab = [
+      { key: "abandon", val: "покидати, залишати" },
+      { key: "benefit", val: "користь, вигода" },
+      { key: "crucial", val: "вишальний, дуже важливий" },
+      { key: "diverse", val: "різноманітний" },
+      { key: "enhance", val: "покращувати, посилювати" },
+      { key: "frequently", val: "часто, нерідко" },
+      { key: "gradual", val: "поступовий" },
+      { key: "hesitate", val: "вагатися, сумніватися" }
+    ];
+
+    const allEngPhrasal = [
+      { key: "give up", val: "здаватися, припиняти спроби" },
+      { key: "look after", val: "доглядати за кимось" },
+      { key: "carry on", val: "продовжувати робити щось" },
+      { key: "run out of", val: "закінчуватися (про ресурси)" },
+      { key: "find out", val: "з'ясовувати, дізнаватися" },
+      { key: "turn down", val: "відхиляти, відмовляти" }
+    ];
+
+    const allEngSynonyms = [
+      { key: "rapid", val: "fast, quick" },
+      { key: "huge", val: "enormous, massive" },
+      { key: "difficult", val: "hard, challenging" },
+      { key: "smart", val: "intelligent, clever" },
+      { key: "accurate", val: "precise, correct" },
+      { key: "start", val: "begin, commence" }
+    ];
+
+    const allEngAntonyms = [
+      { key: "increase", val: "decrease, reduce" },
+      { key: "ancient", val: "modern, recent" },
+      { key: "accept", val: "refuse, reject" },
+      { key: "frequent", val: "rare, uncommon" },
+      { key: "gain", val: "loss, lose" },
+      { key: "expand", val: "shrink, contract" }
+    ];
+
+    // Хранилище ошибок по разделам
+    let savedErrors = {
+      stress: [],
+      phrase: [],
+      eng_vocab: [],
+      eng_phrasal: [],
+      eng_syn: [],
+      eng_ant: []
+    };
+
+    // Генерация алфавита
+    const alphabetWords = {};
+    alphabetData.forEach(item => {
+      const letter = item.letter;
+      const targetCount = item.count;
+      let matched = allNmtWords.filter(w => w.word.charAt(0).toUpperCase() === letter);
+      let list = [...matched];
+      let counter = 1;
+      while (list.length < targetCount) {
+        list.push({
+          word: `${letter.toLowerCase()}слово${counter}`,
+          vowels: ["о", "о"],
+          correctIdx: 1,
+          formatted: `${letter}словО${counter}`
+        });
+        counter++;
+      }
+      alphabetWords[letter] = list.slice(0, targetCount);
+    });
+
+    // Состояние приложения
+    let total = 0, correctCount = 0, maxStreak = 0;
+    let currentRoundWords = [];
+    let roundIndex = 0;
+    let roundStreakVal = 0;
+    let roundCorrectCount = 0;
+    let roundErrors = [];
+    let currentType = 'stress';
+    let currentMode = 'round10';
+
+    // --- СОХРАНЕНИЕ И ЗАГРУЗКА ДАННЫХ (LOCAL STORAGE) ---
+    function loadSavedData() {
+      try {
+        const stats = JSON.parse(localStorage.getItem('nmt_stats') || '{}');
+        total = stats.total || 0;
+        correctCount = stats.correctCount || 0;
+        maxStreak = stats.maxStreak || 0;
+
+        const errs = JSON.parse(localStorage.getItem('nmt_errors') || '{}');
+        savedErrors.stress = errs.stress || [];
+        savedErrors.phrase = errs.phrase || [];
+        savedErrors.eng_vocab = errs.eng_vocab || [];
+        savedErrors.eng_phrasal = errs.eng_phrasal || [];
+        savedErrors.eng_syn = errs.eng_syn || [];
+        savedErrors.eng_ant = errs.eng_ant || [];
+      } catch(e) {
+        console.error("Ошибка загрузки данных:", e);
+      }
+      updateStats();
+      updateErrorCounters();
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem('nmt_stats', JSON.stringify({ total, correctCount, maxStreak }));
+        localStorage.setItem('nmt_errors', JSON.stringify(savedErrors));
+      } catch(e) {
+        console.error("Ошибка сохранения данных:", e);
+      }
+      updateErrorCounters();
+    }
+
+    function updateErrorCounters() {
+      const stressCount = (savedErrors.stress || []).length;
+      const stressDesc = document.getElementById('errors-menu-desc');
+      if (stressDesc) stressDesc.innerText = `${stressCount} слів чекає`;
+
+      if (currentType && currentType !== 'stress') {
+        const genericCount = (savedErrors[currentType] || []).length;
+        const genDesc = document.getElementById('generic-errors-desc');
+        if (genDesc) genDesc.innerText = `${genericCount} елементів чекає`;
+      }
+    }
+
+    function getSectionConfig(type) {
+      switch(type) {
+        case 'phrase':
+          return { title: 'Фразеологізми', subtitle: 'Обери правильне значення виразу', prompt: 'Що означає вираз', pool: allPhraseologisms, parentScreen: 'screen-ukr' };
+        case 'eng_vocab':
+          return { title: 'Vocabulary', subtitle: 'Обери правильний переклад слова', prompt: 'Обери переклад слова', pool: allEngVocab, parentScreen: 'screen-eng' };
+        case 'eng_phrasal':
+          return { title: 'Phrasal Verbs', subtitle: 'Обери значення фразового дієслова', prompt: 'Обери значення дієслова', pool: allEngPhrasal, parentScreen: 'screen-eng' };
+        case 'eng_syn':
+          return { title: 'Synonyms', subtitle: 'Обери синонім до слова', prompt: 'Обери синонім до', pool: allEngSynonyms, parentScreen: 'screen-eng' };
+        case 'eng_ant':
+          return { title: 'Antonyms', subtitle: 'Обери антонім до слова', prompt: 'Обери антонім до', pool: allEngAntonyms, parentScreen: 'screen-eng' };
+        default:
+          return { title: '', subtitle: '', prompt: '', pool: [], parentScreen: 'screen-main' };
+      }
+    }
+
+    function openScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      updateErrorCounters();
+    }
+
+    function openGenericModes(type) {
+      currentType = type;
+      const config = getSectionConfig(type);
+
+      document.getElementById('generic-modes-title').innerText = config.title;
+      document.getElementById('generic-modes-subtitle').innerText = config.subtitle;
+      document.getElementById('generic-modes-back-btn').onclick = () => openScreen(config.parentScreen);
+
+      updateErrorCounters();
+      openScreen('screen-generic-modes');
+    }
+
+    // --- РЕЖИМЫ НАГОЛОСОВ ---
+    function startNormalMode() {
+      currentType = 'stress';
+      currentMode = 'normal';
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-stress-modes');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-stress-modes');
+      document.getElementById('progress-bar-bg').style.display = 'none';
+      currentRoundWords = shuffleArray([...allNmtWords]);
+      initRound();
+    }
+
+    function startRound10() {
+      currentType = 'stress';
+      currentMode = 'round10';
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-stress-modes');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-stress-modes');
+      document.getElementById('progress-bar-bg').style.display = 'block';
+      let pool = shuffleArray([...allNmtWords]);
+      while (pool.length < 10) pool = pool.concat(shuffleArray([...allNmtWords]));
+      currentRoundWords = pool.slice(0, 10);
+      initRound();
+    }
+
+    function startLetterRound(letter) {
+      currentType = 'stress';
+      currentMode = 'alphabet';
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-alphabet');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-alphabet');
+      document.getElementById('progress-bar-bg').style.display = 'block';
+      currentRoundWords = alphabetWords[letter] || alphabetWords["А"];
+      initRound();
+    }
+
+    function startErrorsRound() {
+      if (!savedErrors.stress || savedErrors.stress.length === 0) {
+        alert("Немає збережених помилок!");
+        return;
+      }
+      currentType = 'stress';
+      currentMode = 'errors';
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-stress-modes');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-stress-modes');
+      document.getElementById('progress-bar-bg').style.display = 'block';
+      currentRoundWords = [...savedErrors.stress];
+      initRound();
+    }
+
+    // --- ТЕСТОВЫЕ РЕЖИМЫ (ФРАЗЕОЛОГИЗМЫ И АНГЛИЙСКИЙ) ---
+    function startGenericNormal() {
+      currentMode = 'normal';
+      const config = getSectionConfig(currentType);
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-generic-modes');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-generic-modes');
+      document.getElementById('progress-bar-bg').style.display = 'none';
+      currentRoundWords = shuffleArray([...config.pool]);
+      initRound();
+    }
+
+    function startGenericRound10() {
+      currentMode = 'round10';
+      const config = getSectionConfig(currentType);
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-generic-modes');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-generic-modes');
+      document.getElementById('progress-bar-bg').style.display = 'block';
+      
+      let pool = shuffleArray([...config.pool]);
+      while (pool.length < 10 && pool.length > 0) {
+        pool = pool.concat(shuffleArray([...config.pool]));
+      }
+      currentRoundWords = pool.slice(0, 10);
+      initRound();
+    }
+
+    function startGenericErrors() {
+      const errList = savedErrors[currentType] || [];
+      if (errList.length === 0) {
+        alert("Немає збережених помилок!");
+        return;
+      }
+      currentMode = 'errors';
+      document.getElementById('round-back-btn').onclick = () => openScreen('screen-generic-modes');
+      document.getElementById('result-back-btn').onclick = () => openScreen('screen-generic-modes');
+      document.getElementById('progress-bar-bg').style.display = 'block';
+      currentRoundWords = [...errList];
+      initRound();
+    }
+
+    function openGenericDictList() {
+      const config = getSectionConfig(currentType);
+      openScreen('screen-dict-list');
+      document.getElementById('dict-title').innerText = config.title;
+      document.getElementById('dict-search-input').value = '';
+      renderDictList(config.pool);
+    }
+
+    function filterDictList() {
+      const config = getSectionConfig(currentType);
+      const query = document.getElementById('dict-search-input').value.toLowerCase().trim();
+      const filtered = config.pool.filter(item => 
+        item.key.toLowerCase().includes(query) || 
+        item.val.toLowerCase().includes(query)
+      );
+      renderDictList(filtered);
+    }
+
+    function renderDictList(items) {
+      const container = document.getElementById('dict-container');
+      container.innerHTML = '';
+
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-sub); margin-top: 20px; font-size: 14px;">Нічого не знайдено</div>';
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'dict-card';
+        card.innerHTML = `
+          <div class="dict-phrase">${item.key}</div>
+          <div class="dict-meaning">${item.val}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function restartCurrentRound() {
+      if (currentType === 'stress') {
+        if (currentMode === 'normal') startNormalMode();
+        else if (currentMode === 'round10') startRound10();
+        else if (currentMode === 'errors') startErrorsRound();
+        else openScreen('screen-alphabet');
+      } else {
+        if (currentMode === 'normal') startGenericNormal();
+        else if (currentMode === 'round10') startGenericRound10();
+        else if (currentMode === 'errors') startGenericErrors();
+        else openScreen('screen-generic-modes');
+      }
+    }
+
+    function initRound() {
+      roundIndex = 0;
+      roundStreakVal = 0;
+      roundCorrectCount = 0;
+      roundErrors = [];
+      openScreen('screen-round10');
+      loadRoundQuestion();
+    }
+
+    function loadRoundQuestion() {
+      const current = currentRoundWords[roundIndex];
+      const qNum = roundIndex + 1;
+      const totalWords = currentRoundWords.length;
+
+      if (currentMode === 'normal') {
+        document.getElementById('round-counter').innerText = `Питання ${qNum}`;
+      } else {
+        document.getElementById('round-progress').style.width = ((qNum / totalWords) * 100) + '%';
+        document.getElementById('round-counter').innerText = `Питання ${qNum}`;
+      }
+
+      document.getElementById('round-streak').innerText = `🔥 ${roundStreakVal}`;
+      document.getElementById('feedback-text').innerText = '';
+      document.getElementById('feedback-text').className = 'feedback-msg';
+      document.getElementById('next-btn').style.display = 'none';
+
+      if (currentType === 'stress') {
+        document.getElementById('round-prompt-text').innerText = "Постав наголос";
+        document.getElementById('round-word-text').innerText = current.word;
+        document.getElementById('vowels-container').style.display = 'flex';
+        document.getElementById('options-container').style.display = 'none';
+
+        const vowelsContainer = document.getElementById('vowels-container');
+        vowelsContainer.innerHTML = '';
+
+        current.vowels.forEach((vowel, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'vowel-btn';
+          btn.innerText = vowel;
+          btn.onclick = () => selectVowel(idx, current.correctIdx, current, btn);
+          vowelsContainer.appendChild(btn);
+        });
+
+      } else {
+        const config = getSectionConfig(currentType);
+        document.getElementById('round-prompt-text').innerText = config.prompt;
+        document.getElementById('round-word-text').innerText = current.key;
+        document.getElementById('vowels-container').style.display = 'none';
+        document.getElementById('options-container').style.display = 'flex';
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        let options = [current.val];
+        let otherVals = config.pool
+          .map(item => item.val)
+          .filter(v => v !== current.val);
+        otherVals = shuffleArray(otherVals);
+
+        for (let i = 0; i < 3 && i < otherVals.length; i++) {
+          options.push(otherVals[i]);
+        }
+        options = shuffleArray(options);
+
+        options.forEach(optText => {
+          const btn = document.createElement('button');
+          btn.className = 'option-btn';
+          btn.innerText = optText;
+          btn.onclick = () => selectOption(optText, current.val, current, btn);
+          optionsContainer.appendChild(btn);
+        });
+      }
+    }
+
+    function selectVowel(selectedIdx, correctIdx, currentObj, selectedBtn) {
+      total++;
+      const allBtns = document.querySelectorAll('.vowel-btn');
+      allBtns.forEach(b => b.onclick = null);
+
+      const feedback = document.getElementById('feedback-text');
+
+      if (selectedIdx === correctIdx) {
+        selectedBtn.classList.add('correct');
+        roundStreakVal++;
+        roundCorrectCount++;
+        correctCount++;
+        if (roundStreakVal > maxStreak) maxStreak = roundStreakVal;
+
+        // Если правильный ответ в режиме ошибок — удаляем слово из списка ошибок
+        if (currentMode === 'errors') {
+          savedErrors.stress = savedErrors.stress.filter(e => e.word !== currentObj.word);
+        }
+
+        feedback.innerText = `Правильно! ${currentObj.formatted}`;
+        feedback.className = 'feedback-msg correct';
+      } else {
+        selectedBtn.classList.add('wrong');
+        allBtns[correctIdx].classList.add('correct');
+        roundStreakVal = 0;
+
+        roundErrors.push(currentObj);
+        
+        if (!savedErrors.stress.some(e => e.word === currentObj.word)) {
+          savedErrors.stress.push(currentObj);
+        }
+
+        feedback.innerText = `Неправильно! ${currentObj.formatted}`;
+        feedback.className = 'feedback-msg wrong';
+      }
+
+      saveData();
+      updateStats();
+      document.getElementById('round-streak').innerText = `🔥 ${roundStreakVal}`;
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function selectOption(selectedText, correctVal, currentObj, selectedBtn) {
+      total++;
+      const allBtns = document.querySelectorAll('.option-btn');
+      allBtns.forEach(b => b.onclick = null);
+
+      const feedback = document.getElementById('feedback-text');
+
+      if (selectedText === correctVal) {
+        selectedBtn.classList.add('correct');
+        roundStreakVal++;
+        roundCorrectCount++;
+        correctCount++;
+        if (roundStreakVal > maxStreak) maxStreak = roundStreakVal;
+
+        // Если правильно ответили в режиме ошибок — удаляем из ошибок
+        if (currentMode === 'errors') {
+          savedErrors[currentType] = (savedErrors[currentType] || []).filter(e => e.key !== currentObj.key);
+        }
+
+        feedback.innerHTML = `Правильна відповідь: <span style="color:#34c759">${correctVal}</span>`;
+        feedback.className = 'feedback-msg correct';
+      } else {
+        selectedBtn.classList.add('wrong');
+        allBtns.forEach(b => {
+          if (b.innerText === correctVal) b.classList.add('correct');
+        });
+        roundStreakVal = 0;
+
+        roundErrors.push(currentObj);
+        
+        if (!savedErrors[currentType]) savedErrors[currentType] = [];
+        if (!savedErrors[currentType].some(e => e.key === currentObj.key)) {
+          savedErrors[currentType].push(currentObj);
+        }
+
+        feedback.innerHTML = `Правильна відповідь: <span style="color:#34c759">${correctVal}</span>`;
+        feedback.className = 'feedback-msg wrong';
+      }
+
+      saveData();
+      updateStats();
+      document.getElementById('round-streak').innerText = `🔥 ${roundStreakVal}`;
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextRoundQuestion() {
+      roundIndex++;
+
+      if (currentMode === 'normal') {
+        if (roundIndex >= currentRoundWords.length) {
+          const pool = currentType === 'stress' ? allNmtWords : getSectionConfig(currentType).pool;
+          currentRoundWords = currentRoundWords.concat(shuffleArray([...pool]));
+        }
+        loadRoundQuestion();
+      } else {
+        if (roundIndex < currentRoundWords.length) {
+          loadRoundQuestion();
+        } else {
+          showRoundResults();
+        }
+      }
+    }
+
+    function showRoundResults() {
+      openScreen('screen-round-result');
+      const totalWords = currentRoundWords.length;
+      document.getElementById('res-score').innerText = `${roundCorrectCount} / ${totalWords}`;
+
+      let subtitleText = "Добре, але є що підтягнути.";
+      if (roundCorrectCount === totalWords) {
+        subtitleText = "Відмінно! Жодної помилки!";
+      } else if (roundCorrectCount < Math.ceil(totalWords / 2)) {
+        subtitleText = "Варто ще потренуватися!";
+      }
+      document.getElementById('res-subtitle').innerText = subtitleText;
+
+      const errorsSection = document.getElementById('errors-section');
+      const errorsList = document.getElementById('errors-list');
+      errorsList.innerHTML = '';
+
+      if (roundErrors.length > 0) {
+        errorsSection.style.display = 'block';
+        roundErrors.forEach(err => {
+          const div = document.createElement('div');
+          div.className = 'error-card';
+          if (currentType === 'stress') {
+            div.innerHTML = `
+              <div class="error-word">${err.word}</div>
+              <div class="error-correct">${err.formatted}</div>
+            `;
+          } else {
+            div.innerHTML = `
+              <div class="error-word">${err.key}</div>
+              <div class="error-correct">${err.val}</div>
+            `;
+          }
+          errorsList.appendChild(div);
+        });
+      } else {
+        errorsSection.style.display = 'none';
+      }
+
+      saveData();
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('total-ans').innerText = total;
+      const acc = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+      document.getElementById('accuracy').innerText = acc + '%';
+      document.getElementById('streak').innerText = maxStreak + ' 🔥';
+    }
+
+    function renderAlphabet() {
+      const container = document.getElementById('alphabet-container');
+      container.innerHTML = '';
+
+      alphabetData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'alpha-card';
+        card.innerHTML = `
+          <div class="alpha-letter">${item.letter}</div>
+          <div class="alpha-count">${item.count}</div>
+        `;
+        card.onclick = () => startLetterRound(item.letter);
+        container.appendChild(card);
+      });
+    }
+
+    function shuffleArray(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    // Инициализация при запуске
+    renderAlphabet();
+    loadSavedData();
+  </script>
+</body>
+</html>
