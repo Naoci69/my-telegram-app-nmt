@@ -393,6 +393,16 @@
       color: var(--text-sub);
       line-height: 1.4;
     }
+    /* --- Обране (зірочка) --- */
+    .round-right { display: flex; align-items: center; gap: 12px; }
+    .fav-btn {
+      background: none; border: none; padding: 0; margin: 0;
+      font-size: 22px; line-height: 1; color: var(--text-sub);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .fav-btn.active { color: #ffd60a; }
+    .fav-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .fav-card .fav-btn { flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -565,6 +575,17 @@
         <span class="chevron">›</span>
       </div>
 
+      <div class="menu-item" onclick="openFavorites('stress')">
+        <div class="item-left">
+          <div class="item-icon-box">⭐</div>
+          <div>
+            <div class="item-title">Обране</div>
+            <div class="item-desc" id="fav-menu-desc-stress">0 слів</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
       <div class="menu-item" onclick="startErrorsRound()">
         <div class="item-left">
           <div class="item-icon-box">🔄</div>
@@ -614,6 +635,17 @@
         </div>
       </div>
 
+      <div class="menu-item" onclick="openFavorites(currentType)">
+        <div class="item-left">
+          <div class="item-icon-box">⭐</div>
+          <div>
+            <div class="item-title">Обране</div>
+            <div class="item-desc" id="fav-menu-desc-generic">0 елементів</div>
+          </div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+
       <div class="menu-item" onclick="openGenericDictList()">
         <div class="item-left">
           <div class="item-icon-box">📋</div>
@@ -646,6 +678,14 @@
     <div class="dict-list" id="dict-container"></div>
   </div>
 
+  <!-- 4c. Экран "Обране" -->
+  <div id="screen-favorites" class="screen">
+    <button class="pill-back-btn" id="fav-back-btn" onclick="openScreen('screen-main')">‹ Назад</button>
+    <div class="folder-title">Обране</div>
+    <div class="folder-subtitle" id="fav-subtitle"></div>
+    <div class="dict-list" id="fav-container"></div>
+  </div>
+
   <!-- 5. Экран тренировки -->
   <div id="screen-round10" class="screen">
     <button class="pill-back-btn" id="round-back-btn" onclick="openScreen('screen-stress-modes')">‹ Назад</button>
@@ -656,7 +696,10 @@
 
     <div class="round-status-row">
       <span id="round-counter">Питання 1</span>
-      <span id="round-streak">🔥 0</span>
+      <span class="round-right">
+        <button class="fav-btn" id="fav-btn" onclick="toggleFavCurrent()">☆</button>
+        <span id="round-streak">🔥 0</span>
+      </span>
     </div>
 
     <div class="round-content">
@@ -2896,12 +2939,128 @@
     ];
 
     const allEngPhrasal = [
-      { key: "give up", val: "здаватися, припиняти спроби" },
-      { key: "look after", val: "доглядати за кимось" },
-      { key: "carry on", val: "продовжувати робити щось" },
-      { key: "run out of", val: "закінчуватися (про ресурси)" },
-      { key: "find out", val: "з'ясовувати, дізнаватися" },
-      { key: "turn down", val: "відхиляти, відмовляти" }
+{ key: "call it a day", val: "завершити роботу на сьогодні, припинити робити щось" },
+{ key: "when pigs fly", val: "коли рак на горі свисне, щось, що ніколи не станеться" },
+{ key: "cry over spilled milk", val: "плакати через пролиту молоко, шкодувати через те, що не можна виправити" },
+{ key: "bite the bullet", val: "змусити себе зробити щось неприємне або складне" },
+{ key: "hit the nail on the head", val: "потрапити в точку, сказати чи зробити щось дуже точне" },
+{ key: "burn the midnight oil", val: "працювати до пізньої ночі" },
+{ key: "cost an arm and a leg", val: "коштувати дуже дорого" },
+{ key: "let the cat out of the bag", val: "видавати секрет, розкривати таємницю" },
+{ key: "throw in the towel", val: "здаватися, припиняти боротьбу" },
+{ key: "break down", val: "зламатися, вийти з ладу" },
+{ key: "break up", val: "розірвати стосунки, розійтися" },
+{ key: "break out", val: "раптово початися, спалахнути" },
+{ key: "break into", val: "вломитися, проникнути всередину" },
+{ key: "break off", val: "розірвати (стосунки), припинити" },
+{ key: "break through", val: "прорватися, досягти успіху" },
+{ key: "break away", val: "відділитися, відірватися" },
+{ key: "break in", val: "втручатися" },
+{ key: "bring about", val: "призвести до" },
+{ key: "bring along", val: "взяти з собою" },
+{ key: "bring back", val: "повернути" },
+{ key: "bring in", val: "впроваджувати" },
+{ key: "bring out", val: "виявляти" },
+{ key: "bring up", val: "піднімати (тему)" },
+{ key: "bring together", val: "збирати разом" },
+{ key: "call off", val: "скасувати" },
+{ key: "call on", val: "відвідати" },
+{ key: "call for", val: "вимагати, бути необхідним" },
+{ key: "call in", val: "зателефонувати" },
+{ key: "call back", val: "передзвонити" },
+{ key: "call out", val: "голосно викликати" },
+{ key: "carry on", val: "продовжувати робити щось" },
+{ key: "carry out", val: "виконувати план, наказ, дослідження" },
+{ key: "carry away", val: "піддатися емоціям, втратити контроль" },
+{ key: "carry off", val: "вдало завершити щось важке" },
+{ key: "carry through", val: "завершити щось успішно (через труднощі)" },
+{ key: "come across", val: "натрапити, випадково зустріти" },
+{ key: "come along", val: "з'являтися, приєднуватися" },
+{ key: "come around", val: "змінити думку, приходити до тями" },
+{ key: "come back", val: "повертатися" },
+{ key: "come by", val: "діставати, знаходити" },
+{ key: "come down with", val: "захворіти на щось" },
+{ key: "come forward", val: "виступати, зголошуватися" },
+{ key: "come out", val: "ставати відомим, виходити" },
+{ key: "come up with", val: "придумати, запропонувати" },
+{ key: "cut down (on)", val: "скоротити, зменшити" },
+{ key: "cut out", val: "вирізати, виключити (з раціону, звички)" },
+{ key: "cut in", val: "перебивати, втручатися" },
+{ key: "cut back", val: "скоротити, зменшити (витрати)" },
+{ key: "do away with", val: "позбутися, скасувати" },
+{ key: "do up", val: "оновити, прикрасити" },
+{ key: "do in", val: "виснажити, вбити" },
+{ key: "do without", val: "обійтися без" },
+{ key: "do over", val: "переробити" },
+{ key: "do out of", val: "позбавити (когось чогось)" },
+{ key: "do down", val: "принижувати, критикувати" },
+{ key: "do out", val: "прибирати, чистити" },
+{ key: "fall apart", val: "розпастися" },
+{ key: "fall behind", val: "відставати" },
+{ key: "fall for", val: "закохатися / попастися на вудку" },
+{ key: "fall through", val: "провалитися (про план, угоду)" },
+{ key: "fall out", val: "випадати / сваритися" },
+{ key: "get behind", val: "підтримати" },
+{ key: "get away", val: "втекти, вирватися" },
+{ key: "get by", val: "виживати, обходитися" },
+{ key: "get over", val: "одужати, пережити" },
+{ key: "get across", val: "пояснити, донести (ідею)" },
+{ key: "get through", val: "додзвонитися, пройти через" },
+{ key: "get down to", val: "перейти до (справи), взятися за" },
+{ key: "get away with", val: "уникнути покарання, зійти з рук" },
+{ key: "get back", val: "повернутися" },
+{ key: "get on with", val: "ладнати з кимось, продовжувати" },
+{ key: "give away", val: "віддати" },
+{ key: "give back", val: "повернути" },
+{ key: "give in", val: "піддатися" },
+{ key: "give up", val: "кинути" },
+{ key: "look after", val: "доглядати за" },
+{ key: "look down on", val: "дивитися з презирством" },
+{ key: "look for", val: "шукати" },
+{ key: "look forward to", val: "чекати з нетерпінням" },
+{ key: "look into", val: "розглянути, дослідити" },
+{ key: "look out", val: "остерігатися" },
+{ key: "look over", val: "переглянути" },
+{ key: "look up to", val: "захоплюватися, рівнятися на когось" },
+{ key: "look back on", val: "згадувати, оглядатися назад" },
+{ key: "make up", val: "вигадати" },
+{ key: "make out", val: "розібрати, зрозуміти" },
+{ key: "make up for", val: "компенсувати" },
+{ key: "make off with", val: "вкрасти" },
+{ key: "pick up", val: "підняти, навчитися" },
+{ key: "pick out", val: "вибрати" },
+{ key: "pick on", val: "знущатися" },
+{ key: "pick at", val: "колупатися в (їжі)" },
+{ key: "put off", val: "відкладати (у часі)" },
+{ key: "put up with", val: "терпіти, миритися з чимось" },
+{ key: "put on", val: "надягати (одяг)" },
+{ key: "put out", val: "гасити (вогонь)" },
+{ key: "put away", val: "прибирати на місце" },
+{ key: "put up", val: "встановлювати (напр. намет)" },
+{ key: "put through", val: "з'єднувати (по телефону)" },
+{ key: "put across", val: "пояснювати, доносити (ідею)" },
+{ key: "put forward", val: "висувати (пропозицію)" },
+{ key: "run out of", val: "закінчитись" },
+{ key: "run into", val: "випадково зустріти" },
+{ key: "run after", val: "побігти за" },
+{ key: "run over", val: "переїхати" },
+{ key: "run across", val: "випадково натрапити" },
+{ key: "set up", val: "налаштувати" },
+{ key: "set off", val: "вирушати" },
+{ key: "set aside", val: "відкладати" },
+{ key: "stand up", val: "вставати, підніматися" },
+{ key: "stand by", val: "бути напоготові, підтримувати" },
+{ key: "stand out", val: "виділятися, бути помітним" },
+{ key: "stand for", val: "означати, стояти за" },
+{ key: "take up", val: "почати займатися чимось" },
+{ key: "take over", val: "очолити" },
+{ key: "take off", val: "взлітати" },
+{ key: "take after", val: "піти в когось, бути схожим" },
+{ key: "turn down", val: "відмовляти" },
+{ key: "turn up", val: "з'явитися" },
+{ key: "turn out", val: "виявитися, закінчитися певним чином" },
+{ key: "turn into", val: "перетворюватися на" },
+{ key: "turn off", val: "вимикати" },
     ];
 
     const allEngSynonyms = [
@@ -2982,6 +3141,7 @@
       }
       updateStats();
       updateErrorCounters();
+      loadFavs();
     }
 
     function saveData() {
@@ -2992,6 +3152,116 @@
         console.error("Ошибка сохранения данных:", e);
       }
       updateErrorCounters();
+    }
+
+    // --- ОБРАНЕ (FAVORITES) ---
+    let savedFavs = { stress: [], phrase: [], eng_vocab: [], eng_phrasal: [], eng_syn: [], eng_ant: [] };
+    let favViewType = 'stress';
+
+    function loadFavs() {
+      try {
+        const f = JSON.parse(localStorage.getItem('nmt_favs') || '{}');
+        Object.keys(savedFavs).forEach(k => { savedFavs[k] = Array.isArray(f[k]) ? f[k] : []; });
+      } catch(e) {
+        console.error("Ошибка загрузки избранного:", e);
+      }
+      updateFavCounters();
+    }
+
+    function saveFavs() {
+      try {
+        localStorage.setItem('nmt_favs', JSON.stringify(savedFavs));
+      } catch(e) {
+        console.error("Ошибка сохранения избранного:", e);
+      }
+      updateFavCounters();
+    }
+
+    function favId(type, obj) {
+      return type === 'stress' ? obj.word : obj.key;
+    }
+
+    function isFav(type, obj) {
+      return (savedFavs[type] || []).some(f => favId(type, f) === favId(type, obj));
+    }
+
+    function toggleFav(type, obj) {
+      if (!savedFavs[type]) savedFavs[type] = [];
+      const id = favId(type, obj);
+      if (isFav(type, obj)) {
+        savedFavs[type] = savedFavs[type].filter(f => favId(type, f) !== id);
+      } else {
+        savedFavs[type].push(obj);
+      }
+      saveFavs();
+    }
+
+    function toggleFavCurrent() {
+      const current = currentRoundWords[roundIndex];
+      if (!current) return;
+      toggleFav(currentType, current);
+      updateFavBtn();
+    }
+
+    function updateFavBtn() {
+      const btn = document.getElementById('fav-btn');
+      const current = currentRoundWords[roundIndex];
+      if (!btn || !current) return;
+      const on = isFav(currentType, current);
+      btn.innerText = on ? '★' : '☆';
+      btn.classList.toggle('active', on);
+    }
+
+    function updateFavCounters() {
+      const s = document.getElementById('fav-menu-desc-stress');
+      if (s) s.innerText = `${(savedFavs.stress || []).length} слів`;
+      const g = document.getElementById('fav-menu-desc-generic');
+      if (g && currentType && currentType !== 'stress') {
+        g.innerText = `${(savedFavs[currentType] || []).length} елементів`;
+      }
+    }
+
+    function openFavorites(type) {
+      favViewType = type;
+      const backTarget = type === 'stress' ? 'screen-stress-modes' : 'screen-generic-modes';
+      document.getElementById('fav-back-btn').onclick = () => openScreen(backTarget);
+      document.getElementById('fav-subtitle').innerText =
+        type === 'stress' ? 'Наголоси' : getSectionConfig(type).title;
+      renderFavorites();
+      openScreen('screen-favorites');
+    }
+
+    function renderFavorites() {
+      const container = document.getElementById('fav-container');
+      container.innerHTML = '';
+      const items = savedFavs[favViewType] || [];
+
+      if (items.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-sub); margin-top: 20px; font-size: 14px;">Тут поки нічого немає. Натисни ☆ під час тренування.</div>';
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'dict-card fav-card';
+        const title = favViewType === 'stress' ? item.formatted : item.key;
+        const sub = favViewType === 'stress' ? '' : `<div class="dict-meaning">${item.val}</div>`;
+        card.innerHTML = `
+          <div>
+            <div class="dict-phrase" ${sub ? '' : 'style="margin-bottom: 0;"'}>${title}</div>
+            ${sub}
+          </div>
+        `;
+        const btn = document.createElement('button');
+        btn.className = 'fav-btn active';
+        btn.innerText = '★';
+        btn.onclick = () => {
+          toggleFav(favViewType, item);
+          renderFavorites();
+        };
+        card.appendChild(btn);
+        container.appendChild(card);
+      });
     }
 
     function updateErrorCounters() {
@@ -3027,6 +3297,7 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
       updateErrorCounters();
+      updateFavCounters();
     }
 
     function openGenericModes(type) {
@@ -3157,11 +3428,26 @@
 
       items.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'dict-card';
+        card.className = 'dict-card fav-card';
         card.innerHTML = `
-          <div class="dict-phrase">${item.key}</div>
-          <div class="dict-meaning">${item.val}</div>
+          <div>
+            <div class="dict-phrase">${item.key}</div>
+            <div class="dict-meaning">${item.val}</div>
+          </div>
         `;
+        const favBtn = document.createElement('button');
+        favBtn.className = 'fav-btn';
+        const paintStar = () => {
+          const on = isFav(currentType, item);
+          favBtn.innerText = on ? '★' : '☆';
+          favBtn.classList.toggle('active', on);
+        };
+        paintStar();
+        favBtn.onclick = () => {
+          toggleFav(currentType, item);
+          paintStar();
+        };
+        card.appendChild(favBtn);
         container.appendChild(card);
       });
     }
@@ -3202,6 +3488,7 @@
       }
 
       document.getElementById('round-streak').innerText = `🔥 ${roundStreakVal}`;
+      updateFavBtn();
       document.getElementById('feedback-text').innerText = '';
       document.getElementById('feedback-text').className = 'feedback-msg';
       document.getElementById('next-btn').style.display = 'none';
